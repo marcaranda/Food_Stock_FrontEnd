@@ -16,7 +16,7 @@ function NewShopping() {
       try {
         const dietsCollectionRef = collection(db, 'diets');
         const querySnapshot = await getDocs(dietsCollectionRef);
-        setDiets(querySnapshot.docs); // Guarda los documentos de las dietas en el estado
+        setDiets(querySnapshot.docs);
         const dietNames = querySnapshot.docs.map(doc => doc.data().dietName);
         dietNames.unshift("Todas las Dietas");
         setDietNames(dietNames); // Guarda los nombres de las dietas en el estado
