@@ -30,7 +30,7 @@ function MyStock() {
     if (!booleanAddMeal) {
       fetchStock(); // Ejecuta la función cuando se carga el componente
     }
-  }, [setBooleanAddMeal]);
+  }, [booleanAddMeal]);
 
   const handleInputChange = (field, value) => {
     switch (field) {
@@ -60,7 +60,7 @@ function MyStock() {
     setUnit("g");
 
     try {
-      const docRef = await addDoc(collection(db, "stock"), mealData);
+      await addDoc(collection(db, "stock"), mealData);
     } catch (e) {
       console.error("Error al guardar la dieta: ", e);
     }
@@ -92,7 +92,7 @@ function MyStock() {
               { value: 'u', label: 'Unidades (u)' },
             ]}
             predeterminated={{ value: 'g', label: 'Gramos (g)' }}
-            onSelect={(selected) => handleInputChange("unit", selected.value)} // Necesitarás agregar una función para manejar el cambio
+            onSelect={(selected) => handleInputChange("unit", selected.value)}
           />
           <button onClick={handleSaveButton}>Guardar</button>
         </div>

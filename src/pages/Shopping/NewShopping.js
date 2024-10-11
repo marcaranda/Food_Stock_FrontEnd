@@ -9,7 +9,7 @@ function NewShopping() {
   const navigate = useNavigate();
   const [diets, setDiets] = useState([]);
   const [dietNames, setDietNames] = useState([]);
-  const [selectedDiet, setSelectedDiet] = useState("Todas las Dietas");
+  const [selectedDiet, setSelectedDiet] = useState(null); // Cambiado a null
 
   useEffect(() => {
     const fetchDietNames = async () => {
@@ -18,7 +18,7 @@ function NewShopping() {
         const querySnapshot = await getDocs(dietsCollectionRef);
         setDiets(querySnapshot.docs);
         const dietNames = querySnapshot.docs.map(doc => doc.data().dietName);
-        dietNames.unshift("Todas las Dietas");
+        dietNames.push("Todas las Dietas");
         setDietNames(dietNames); // Guarda los nombres de las dietas en el estado
       } catch (error) {
         console.error("Error al obtener los dietName:", error);
@@ -29,8 +29,8 @@ function NewShopping() {
   }, []);
 
   const handleSelectChange = (selected) => {
-    setSelectedDiet(selected);
-    console.log(selected);
+    const selectedDietDoc = diets.find((diet) => diet.data().dietName === selected);
+    setSelectedDiet(selectedDietDoc ? selectedDietDoc.data() : null); // Asegúrate de que sea null si no se encuentra
   }
 
   return (
@@ -40,11 +40,26 @@ function NewShopping() {
 
       <DropDown
         options={dietNames.map((dietName) => ({ value: dietName, label: dietName }))}
-        predeterminated={{ value: 'Todas las Dietas', label: 'Todas las Dietas' }}
+        predeterminated={{ value: '', label: 'Selecciona una dieta' }}
         onSelect={(selected) => handleSelectChange(selected.value)} // Necesitarás agregar una función para manejar el cambio
       />
+
+      <div>
+        <h2>Total de Alimentos:</h2>
+        {selectedDiet ? ( // Verifica si selectedDiet no es null
+          <ul>
+            {Object.entries(selectedDiet.totalFood).map(([food, { quantity, unit }]) => (
+              <li key={food}>
+                {food}: {quantity} {unit}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No hay alimentos para mostrar.</p> // Mensaje alternativo si no hay selección
+        )}
+      </div>
     </div>
   );
 }
 
-export default NewShopping
+export default NewShopping;

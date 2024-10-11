@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
+import DropDown from "../../components/DropDown";
 
 import { db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -8,8 +9,19 @@ import { doc, getDoc } from "firebase/firestore";
 function DietDetails() {
   const navigate = useNavigate();
   const { dietId } = useParams();
-  const [diet, setDiet] = useState(null); // Almacena los datos de la dieta
-  const [loading, setLoading] = useState(true); // Para manejar el estado de carga
+  const [diet, setDiet] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [day, setDay] = useState(new Date().getDay());
+
+  const dayToLabelMap = {
+    1: 'Lunes',
+    2: 'Martes',
+    3: 'Miércoles',
+    4: 'Jueves',
+    5: 'Viernes',
+    6: 'Sábado',
+    0: 'Domingo',
+  };
 
   useEffect(() => {
     const fetchDiet = async () => {
@@ -32,6 +44,12 @@ function DietDetails() {
     fetchDiet();
   }, [dietId]);
 
+  const handleDayChange = (value) => {
+    setDay(parseInt(value));
+
+    // Aquí puedes hacer algo con el día seleccionado
+  }
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -40,25 +58,63 @@ function DietDetails() {
     return <div>Diet not found!</div>;
   }
 
+  const selectedDayMeals = diet.days.find(d => d.day === day);
+  const showTotalFood = day === 8;
+
   return (
     <div>
       <button onClick={() => navigate("/myDiets")}>Volver</button>
       <h1>{diet.dietName}</h1>
-      <h2>Meals:</h2>
-      <ul>
-        {diet.meals.map((meal, index) => (
-          <li key={index}>
-            <h3>Meal {index + 1}:</h3>
+
+      <DropDown
+        options={[
+          { value: '1', label: 'Lunes' },
+          { value: '2', label: 'Martes' },
+          { value: '3', label: 'Miércoles' },
+          { value: '4', label: 'Jueves' },
+          { value: '5', label: 'Viernes' },
+          { value: '6', label: 'Sábado' },
+          { value: '0', label: 'Domingo' },
+          { value: '8', label: 'Todos los días' },
+        ]}
+        predeterminated={{ value: day, label: dayToLabelMap[day] }}
+        onSelect={(selected) => handleDayChange(selected.value)}
+      />
+
+      {showTotalFood ? (
+        <div>
+          <h2>Total de Alimentos:</h2>
+          <ul>
+            {Object.entries(diet.totalFood).map(([food, { quantity, unit }]) => (
+              <li key={food}>
+                {food}: {quantity} {unit}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <>
+          <h2>Comidas del {dayToLabelMap[day]}:</h2>
+          {selectedDayMeals ? (
             <ul>
-              {meal.ingredients.map((ingredient, i) => (
-                <li key={i}>
-                  {ingredient.food}: {ingredient.quantity} {ingredient.unit}
+              {selectedDayMeals.meals.map((meal, index) => (
+                <li key={index}>
+                  <h3>Comida {index + 1}:</h3>
+                  <ul>
+                    {meal.ingredients.map((ingredient, i) => (
+                      <li key={i}>
+                        {ingredient.food}: {ingredient.quantity} {ingredient.unit}
+                      </li>
+                    ))}
+                  </ul>
                 </li>
               ))}
             </ul>
-          </li>
-        ))}
-      </ul>
+          ) : (
+            <p>No hay comidas para este día.</p>
+          )}
+        </>
+      )}
     </div>
   );
 };

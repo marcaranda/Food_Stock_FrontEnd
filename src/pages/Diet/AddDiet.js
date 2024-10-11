@@ -8,13 +8,14 @@ import { collection, addDoc } from "firebase/firestore";
 function AddDiet() {
   const navigate = useNavigate();
   const [dietName, setDietName] = useState("Nueva Dieta");
-  const [numMeals, setNumMeals] = useState(0);
   const [mealData, setMealData] = useState([]);
+  const [mealWeekData, setMealWeekData] = useState([]);
+  const [day, setDay] = useState(1);
+  const [booleanDay, setBooleanDay] = useState(Array.from({ length: 7 }, () => false));
 
   const handleAddNumMeals = () => {
     const newMeal = { ingredients: [] };
     setMealData([...mealData, newMeal]);
-    setNumMeals(numMeals + 1);
   };
 
   const handleAddNumIngredients = (mealIndex) => {
@@ -26,7 +27,6 @@ function AddDiet() {
   const handleDeleteMeal = (index) => {
     const newMealData = mealData.filter((_, i) => i !== index);
     setMealData(newMealData);
-    setNumMeals(newMealData.length);
   };
 
   const handleInputChange = (mealIndex, ingredientIndex, field, value) => {
@@ -36,24 +36,90 @@ function AddDiet() {
   };
 
   const handleSaveButton = async () => {
-    const dietData = {
-      dietName,
-      meals: mealData,
-    };
+    if (booleanDay.some((day) => day === false)){
+      const newBooleanDay = [...booleanDay];
+      newBooleanDay[day] = true;
+      setBooleanDay(newBooleanDay);
 
-    try {
-      const docRef = await addDoc(collection(db, "diets"), dietData);
-      navigate("/");
-    } catch (e) {
-      console.error("Error al guardar la dieta: ", e);
+      setMealWeekData(prev => {
+        const updatedMealWeekData = [...prev];
+        updatedMealWeekData[day] = mealData;
+        return updatedMealWeekData;
+      });
+      setMealData([]);
+
+      if (day + 1 <= 6) {
+        setDay(day + 1);
+      }
+      else {
+        setDay(0);
+      }
+
+      console.log(newBooleanDay);
+    }
+    else {
+      console.log("guardar dieta");
+      const foodTotals = {};
+
+      mealWeekData.forEach((mealDayData) => {
+        mealDayData.forEach((meal) => {
+          meal.ingredients.forEach((ingredient) => {
+            const { food, quantity, unit } = ingredient;
+      
+            if (foodTotals[food]) {
+              foodTotals[food].quantity += parseFloat(quantity);
+            } else {
+              foodTotals[food] = { quantity: parseFloat(quantity), unit };
+            }
+          });
+        });
+      });
+
+      const dietData = {
+        dietName,
+        days: mealWeekData.map((dayMeals, index) => ({
+          day: index + 1,
+          meals: dayMeals.map(meal => ({
+            ingredients: meal.ingredients,
+          })),
+        })),
+        totalFood: foodTotals,
+      };
+
+      try {
+        await addDoc(collection(db, "diets"), dietData);
+        navigate("/");
+      } catch (e) {
+        console.error("Error al guardar la dieta: ", e);
+      }
     }
   };
+
+  const handleDayChange = (value) => {
+    setDay(value);
+    setMealData([]);
+  }
 
   return (
     <div>
       <button onClick={() => navigate("/")}>Volver</button>
       <h1>Añadir Dieta</h1>
       <input type="text" placeholder="Nombre de la dieta" value={dietName} onChange={(e) => setDietName(e.target.value)}/>
+
+      <DropDown
+        options={[
+          { value: '1', label: 'Lunes' },
+          { value: '2', label: 'Martes' },
+          { value: '3', label: 'Miércoles' },
+          { value: '4', label: 'Jueves' },
+          { value: '5', label: 'Viernes' },
+          { value: '6', label: 'Sábado' },
+          { value: '7', label: 'Domingo' },
+        ]}
+        predeterminated={{ value: 1, label: "Lunes" }}
+        onSelect={(selected) => handleDayChange(selected.value)}
+      />
+
       <button onClick={handleAddNumMeals}>Añadir Comida</button>
       {mealData.map((meal, i) => (
         <div key={`meal-${i}`}>
