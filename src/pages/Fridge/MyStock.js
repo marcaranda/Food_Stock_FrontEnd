@@ -70,7 +70,7 @@ function MyStock() {
 
   return (
     <div>
-      <button onClick={() => navigate("/")}>Volver</button>
+      <button onClick={() => navigate("/")}>Inicio</button>
       <h1>Mi Stock</h1>
       <button onClick={() => setBooleanAddMeal(true)}>Añadir Comida</button>
 

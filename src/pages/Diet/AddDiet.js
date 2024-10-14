@@ -102,7 +102,7 @@ function AddDiet() {
 
   return (
     <div>
-      <button onClick={() => navigate("/")}>Volver</button>
+      <button onClick={() => navigate("/")}>Inicio</button>
       <h1>Añadir Dieta</h1>
       <input type="text" placeholder="Nombre de la dieta" value={dietName} onChange={(e) => setDietName(e.target.value)}/>
 

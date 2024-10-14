@@ -35,7 +35,7 @@ function NewShopping() {
 
   return (
     <div>
-      <button onClick={() => navigate("/")}>Volver</button>
+      <button onClick={() => navigate("/")}>Inicio</button>
       <h1>Nueva Compra</h1>
 
       <DropDown

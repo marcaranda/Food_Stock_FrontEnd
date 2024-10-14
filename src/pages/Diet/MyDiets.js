@@ -27,7 +27,7 @@ function MyDiets() {
 
   return (
     <div>
-      <button onClick={() => navigate("/")}>Volver</button>
+      <button onClick={() => navigate("/")}>Inicio</button>
       <h1>Mis Dietas</h1>
       {dietNames.map((dietName, index) => (
         <div key={index}>

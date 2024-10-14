@@ -4,12 +4,13 @@ import { useParams } from 'react-router-dom';
 import DropDown from "../../components/DropDown";
 
 import { db } from "../../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, deleteDoc, setDoc } from "firebase/firestore";
 
 function DietDetails() {
   const navigate = useNavigate();
   const { dietId } = useParams();
   const [diet, setDiet] = useState(null);
+  const [stock, setStock] = useState(null);
   const [loading, setLoading] = useState(true);
   const [day, setDay] = useState(new Date().getDay());
 
@@ -34,6 +35,15 @@ function DietDetails() {
         } else {
           console.error('No such document!');
         }
+
+        const stockCollectionRef = collection(db, 'stock');
+        const querySnapshot = await getDocs(stockCollectionRef);
+        const stockData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          data: doc.data()
+        }));
+        setStock(stockData);
+
       } catch (error) {
         console.error('Error fetching diet:', error);
       } finally {
@@ -50,6 +60,49 @@ function DietDetails() {
     // Aquí puedes hacer algo con el día seleccionado
   }
 
+  const handleConfirmMeal = (meal) => {
+    console.log('Meal confirmed:', meal);
+
+    for (const ingredient of meal.ingredients) {
+      let food = stock.find(item => item.data.food === ingredient.food);
+      food.data.quantity -= parseFloat(ingredient.quantity);
+
+      if (food.data.quantity <= 0) {
+        deleteFoodStock(food);
+      }
+      else {
+        saveFoodStock(food);
+      }
+    }
+  }
+
+  const deleteFoodStock = async (food) => {
+    try {
+      const foodDocRef = doc(db, "stock", food.id); // asume que 'food.food' es el ID del documento
+      await deleteDoc(foodDocRef);
+      console.log(`Food ${food.data.food} deleted from stock`);
+    } catch (error) {
+        console.error("Error deleting food from stock:", error);
+    }
+  }
+
+  const saveFoodStock = async (food) => {
+    try {
+      const foodDocRef = doc(db, "stock", food.id); // asume que 'food.food' es el ID del documento
+
+      // Se usa `setDoc` para sobrescribir o crear el documento si no existe
+      await setDoc(foodDocRef, {
+          food: food.data.food,
+          unit: food.data.unit,
+          quantity: food.data.quantity
+      }, { merge: true }); // merge: true asegura que no se sobrescriban campos innecesarios
+
+      console.log(`Food ${food.data.food} updated in stock`);
+    } catch (error) {
+        console.error("Error saving food in stock:", error);
+    }
+  }
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -63,6 +116,7 @@ function DietDetails() {
 
   return (
     <div>
+      <button onClick={() => navigate("/")}>Inicio</button>
       <button onClick={() => navigate("/myDiets")}>Volver</button>
       <h1>{diet.dietName}</h1>
 
@@ -100,6 +154,7 @@ function DietDetails() {
               {selectedDayMeals.meals.map((meal, index) => (
                 <li key={index}>
                   <h3>Comida {index + 1}:</h3>
+                  <button onClick={() => handleConfirmMeal(meal)}>Confirmar</button>
                   <ul>
                     {meal.ingredients.map((ingredient, i) => (
                       <li key={i}>
