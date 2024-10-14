@@ -9,6 +9,7 @@ function NewShopping() {
   const navigate = useNavigate();
   const [diets, setDiets] = useState([]);
   const [dietNames, setDietNames] = useState([]);
+  const [stock, setStock] = useState(null);
   const [selectedDiet, setSelectedDiet] = useState(null); // Cambiado a null
 
   useEffect(() => {
@@ -20,6 +21,14 @@ function NewShopping() {
         const dietNames = querySnapshot.docs.map(doc => doc.data().dietName);
         dietNames.push("Todas las Dietas");
         setDietNames(dietNames); // Guarda los nombres de las dietas en el estado
+
+        const stockCollectionRef = collection(db, 'stock');
+        const querySnapshot2 = await getDocs(stockCollectionRef);
+        const stockData = querySnapshot2.docs.map(doc => ({
+          id: doc.id,
+          data: doc.data()
+        }));
+        setStock(stockData);
       } catch (error) {
         console.error("Error al obtener los dietName:", error);
       }
@@ -56,6 +65,21 @@ function NewShopping() {
           </ul>
         ) : (
           <p>No hay alimentos para mostrar.</p> // Mensaje alternativo si no hay selección
+        )}
+      </div>
+
+      <div>
+        <h2>Stock:</h2>
+        {stock ? ( // Verifica si stock no es null
+          <ul>
+            {stock.map((food) => (
+              <li key={food.id}>
+                {food.data.food}: {food.data.quantity} {food.data.unit}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No hay alimentos en el stock.</p> // Mensaje alternativo si no hay selección
         )}
       </div>
     </div>

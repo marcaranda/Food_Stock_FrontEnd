@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DropDown from "../../components/DropDown";
+import styles from "./AddDiet.module.css";
 
 import { db } from "../../firebase";
 import { collection, addDoc } from "firebase/firestore";
@@ -26,6 +27,12 @@ function AddDiet() {
 
   const handleDeleteMeal = (index) => {
     const newMealData = mealData.filter((_, i) => i !== index);
+    setMealData(newMealData);
+  };
+
+  const handleDeleteIngredient = (mealIndex, index) => {
+    const newMealData = [...mealData];
+    newMealData[mealIndex].ingredients = newMealData[mealIndex].ingredients.filter((_, i) => i !== index);
     setMealData(newMealData);
   };
 
@@ -122,12 +129,14 @@ function AddDiet() {
 
       <button onClick={handleAddNumMeals}>Añadir Comida</button>
       {mealData.map((meal, i) => (
-        <div key={`meal-${i}`}>
-          <label>Comida {i + 1}:</label>
-          <button onClick={() => handleAddNumIngredients(i)}>Añadir Alimento</button>
-          <button onClick={() => handleDeleteMeal(i)}>Eliminar Comida</button>
+        <div key={`meal-${i}`} className={styles["new-meal"]}>
+          <div className={styles["ingredient-header"]}>
+            <label>Comida {i + 1}:</label>
+            <button onClick={() => handleAddNumIngredients(i)}>Añadir Alimento</button>
+            <button onClick={() => handleDeleteMeal(i)}>Eliminar Comida</button>
+          </div>
           {meal.ingredients.map((ingredient, j) => (
-            <div key={`ingredient-${i}-${j}`}>
+            <div key={`ingredient-${i}-${j}`} className={styles["new-ingredient"]}>
               <label>Alimento {j + 1}:</label>
               <input
                 type="text"
@@ -149,6 +158,7 @@ function AddDiet() {
                 predeterminated={{ value: ingredient.unit, label: ingredient.unit === 'g' ? 'Gramos (g)' : 'Unidades (u)' }}
                 onSelect={(selected) => handleInputChange(i, j, "unit", selected.value)} // Necesitarás agregar una función para manejar el cambio
               />
+              <button onClick={() => handleDeleteIngredient(i, j)}>Eliminar Alimento</button>
             </div>
           ))}
         </div>
