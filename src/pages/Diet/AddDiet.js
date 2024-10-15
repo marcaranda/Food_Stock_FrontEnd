@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DropDown from "../../components/DropDown";
-import styles from "./AddDiet.module.css";
+import "../../styles/AddDiet.css";
 
 import { db } from "../../firebase";
 import { setDoc, doc } from "firebase/firestore";
@@ -145,14 +145,14 @@ function AddDiet() {
       <button onClick={handleAddNumMeals}>Añadir Comida</button>
       <button onClick={handleSameAllDays}>{sameAllDays ? 'Checked' : 'Check'}</button>
       {mealData.map((meal, i) => (
-        <div key={`meal-${i}`} className={styles["new-meal"]}>
-          <div className={styles["ingredient-header"]}>
+        <div key={`meal-${i}`} className="new-meal">
+          <div className="ingredient-header">
             <label>Comida {i + 1}:</label>
             <button onClick={() => handleAddNumIngredients(i)}>Añadir Alimento</button>
             <button onClick={() => handleDeleteMeal(i)}>Eliminar Comida</button>
           </div>
           {meal.ingredients.map((ingredient, j) => (
-            <div key={`ingredient-${i}-${j}`} className={styles["new-ingredient"]}>
+            <div key={`ingredient-${i}-${j}`} className="new-ingredient">
               <label>Alimento {j + 1}:</label>
               <input
                 type="text"

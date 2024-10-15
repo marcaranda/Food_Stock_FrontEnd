@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DropDown from "../../components/DropDown";
-import styles from "./MyStock.module.css";
+import "../../styles/MyStock.css";
 
 import { db } from "../../firebase";
 import { collection, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
@@ -135,7 +135,7 @@ function MyStock() {
         {stock ? ( // Verifica si stock no es null
           <ul>
             {stock.map((food, i) => (
-              <li key={food.id} className={styles["ingredient"]}>
+              <li key={food.id} className="ingredient">
               <label htmlFor={`food-${food.id}`}>{food.food}: </label>
               <input
                 id={`food-${food.id}`}

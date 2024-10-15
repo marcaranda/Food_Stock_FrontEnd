@@ -1,11 +1,11 @@
 import React from 'react';
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom"
 
-import Initial from "./pages/Initial"
+import Initial from "./pages/Initial/Initial"
 import MyDiets from "./pages/Diet/MyDiets"
 import DietDetails from "./pages/Diet/DietDetails"
 import AddDiet from "./pages/Diet/AddDiet"
-import MyStock from './pages/Fridge/MyStock';
+import MyStock from './pages/Stock/MyStock';
 import NewShopping from './pages/Shopping/NewShopping';
 
 function App() {

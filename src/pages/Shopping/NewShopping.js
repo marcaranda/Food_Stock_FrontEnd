@@ -11,6 +11,7 @@ function NewShopping() {
   const [dietNames, setDietNames] = useState([]);
   const [stock, setStock] = useState(null);
   const [selectedDiet, setSelectedDiet] = useState(null); // Cambiado a null
+  const [missingItems, setMissingItems] = useState([]); // Estado para los alimentos faltantes
 
   useEffect(() => {
     const fetchDietNames = async () => {
@@ -20,7 +21,7 @@ function NewShopping() {
         setDiets(querySnapshot.docs);
         const dietNames = querySnapshot.docs.map(doc => doc.data().dietName);
         dietNames.push("Todas las Dietas");
-        setDietNames(dietNames); // Guarda los nombres de las dietas en el estado
+        setDietNames(dietNames);
 
         const stockCollectionRef = collection(db, 'stock');
         const querySnapshot2 = await getDocs(stockCollectionRef);
@@ -34,13 +35,50 @@ function NewShopping() {
       }
     };
 
-    fetchDietNames(); // Ejecuta la función cuando se carga el componente
+    fetchDietNames();
   }, []);
 
   const handleSelectChange = (selected) => {
     const selectedDietDoc = diets.find((diet) => diet.data().dietName === selected);
-    setSelectedDiet(selectedDietDoc ? selectedDietDoc.data() : null); // Asegúrate de que sea null si no se encuentra
-  }
+    const dietData = selectedDietDoc ? selectedDietDoc.data() : null;
+    setSelectedDiet(dietData);
+    if (dietData && stock) {
+      calculateMissingItems(dietData, stock);
+    }
+  };
+
+  // Función para calcular los alimentos faltantes
+  const calculateMissingItems = (diet, stock) => {
+    const missing = [];
+
+    // Recorremos los alimentos requeridos por la dieta
+    for (const [food, { quantity, unit }] of Object.entries(diet.totalFood)) {
+      // Verificamos si el alimento existe en el stock
+      const stockItem = stock.find((item) => item.data.food === food);
+
+      if (!stockItem) {
+        // Si el alimento no existe en el stock, lo añadimos a los faltantes
+        missing.push({
+          food,
+          missingQuantity: quantity,
+          unit,
+        });
+      } else {
+        // Si el alimento está en el stock pero no es suficiente
+        const stockQuantity = stockItem.data.quantity;
+        if (stockQuantity < quantity) {
+          missing.push({
+            food,
+            missingQuantity: quantity - stockQuantity,
+            unit,
+          });
+        }
+      }
+    }
+
+    // Guardamos los alimentos faltantes en el estado
+    setMissingItems(missing);
+  };
 
   return (
     <div>
@@ -50,12 +88,12 @@ function NewShopping() {
       <DropDown
         options={dietNames.map((dietName) => ({ value: dietName, label: dietName }))}
         predeterminated={{ value: '', label: 'Selecciona una dieta' }}
-        onSelect={(selected) => handleSelectChange(selected.value)} // Necesitarás agregar una función para manejar el cambio
+        onSelect={(selected) => handleSelectChange(selected.value)}
       />
 
       <div>
         <h2>Total de Alimentos:</h2>
-        {selectedDiet ? ( // Verifica si selectedDiet no es null
+        {selectedDiet ? (
           <ul>
             {Object.entries(selectedDiet.totalFood).map(([food, { quantity, unit }]) => (
               <li key={food}>
@@ -64,13 +102,13 @@ function NewShopping() {
             ))}
           </ul>
         ) : (
-          <p>No hay alimentos para mostrar.</p> // Mensaje alternativo si no hay selección
+          <p>No hay alimentos para mostrar.</p>
         )}
       </div>
 
       <div>
         <h2>Stock:</h2>
-        {stock ? ( // Verifica si stock no es null
+        {stock ? (
           <ul>
             {stock.map((food) => (
               <li key={food.id}>
@@ -79,7 +117,22 @@ function NewShopping() {
             ))}
           </ul>
         ) : (
-          <p>No hay alimentos en el stock.</p> // Mensaje alternativo si no hay selección
+          <p>No hay alimentos en el stock.</p>
+        )}
+      </div>
+
+      <div>
+        <h2>Alimentos faltantes:</h2>
+        {missingItems.length > 0 ? (
+          <ul>
+            {missingItems.map((item) => (
+              <li key={item.food}>
+                {item.food}: Faltan {item.missingQuantity} {item.unit}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No hay alimentos faltantes.</p>
         )}
       </div>
     </div>
