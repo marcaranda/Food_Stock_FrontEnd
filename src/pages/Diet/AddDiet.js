@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DropDown from "../../components/DropDown";
 import styles from "./AddDiet.module.css";
@@ -13,6 +13,7 @@ function AddDiet() {
   const [mealWeekData, setMealWeekData] = useState([]);
   const [day, setDay] = useState(1);
   const [booleanDay, setBooleanDay] = useState(Array.from({ length: 7 }, () => false));
+  const [sameAllDays, setSameAllDays] = useState(false);
 
   const handleAddNumMeals = () => {
     const newMeal = { ingredients: [] };
@@ -42,8 +43,11 @@ function AddDiet() {
     setMealData(newMealData);
   };
 
-  const handleSaveButton = async () => {
-    if (booleanDay.some((day) => day === false)){
+  const handleSaveButton = () => {
+    if (sameAllDays) {
+      setMealWeekData(Array.from({ length: 7 }, () => mealData));
+    } 
+    else if (booleanDay.some((day) => day === false)) {
       const newBooleanDay = [...booleanDay];
       newBooleanDay[day] = true;
       setBooleanDay(newBooleanDay);
@@ -53,19 +57,26 @@ function AddDiet() {
         updatedMealWeekData[day] = mealData;
         return updatedMealWeekData;
       });
+
       setMealData([]);
 
       if (day + 1 <= 6) {
         setDay(day + 1);
-      }
-      else {
+      } else {
         setDay(0);
       }
-
-      console.log(newBooleanDay);
     }
-    else {
-      console.log("guardar dieta");
+  };
+
+  useEffect(() => {
+    if (mealWeekData.length === 7 && mealWeekData.every(dayMeals => dayMeals.length > 0)) {
+      saveToDatabase();
+    }
+  }, [mealWeekData]);
+
+  // eslint-disable-next-line
+  const saveToDatabase = async () => {
+    console.log("guardar dieta");
       const foodTotals = {};
 
       mealWeekData.forEach((mealDayData) => {
@@ -99,12 +110,15 @@ function AddDiet() {
       } catch (e) {
         console.error("Error al guardar la dieta: ", e);
       }
-    }
   };
 
   const handleDayChange = (value) => {
     setDay(value);
     setMealData([]);
+  }
+
+  const handleSameAllDays = () => {
+    setSameAllDays(!sameAllDays);
   }
 
   return (
@@ -121,13 +135,14 @@ function AddDiet() {
           { value: '4', label: 'Jueves' },
           { value: '5', label: 'Viernes' },
           { value: '6', label: 'Sábado' },
-          { value: '7', label: 'Domingo' },
+          { value: '0', label: 'Domingo' },
         ]}
         predeterminated={{ value: 1, label: "Lunes" }}
         onSelect={(selected) => handleDayChange(selected.value)}
       />
 
       <button onClick={handleAddNumMeals}>Añadir Comida</button>
+      <button onClick={handleSameAllDays}>{sameAllDays ? 'Checked' : 'Check'}</button>
       {mealData.map((meal, i) => (
         <div key={`meal-${i}`} className={styles["new-meal"]}>
           <div className={styles["ingredient-header"]}>
