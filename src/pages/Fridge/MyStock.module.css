@@ -1,0 +1,12 @@
+.ingredient {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 10px;
+}
+
+.ingredient::before {
+  content: '•'; /* Este es el bullet que se mostrará */
+  margin-right: 10px; /* Espacio entre el bullet y el texto */
+  color: black; /* Color del bullet, lo puedes cambiar */
+  font-size: 20px; /* Tamaño del bullet */
+}

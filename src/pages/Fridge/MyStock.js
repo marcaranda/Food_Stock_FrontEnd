@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DropDown from "../../components/DropDown";
+import styles from "./MyStock.module.css";
 
 import { db } from "../../firebase";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
 
 function MyStock() {
   const navigate = useNavigate();
@@ -27,10 +28,8 @@ function MyStock() {
       }
     }
 
-    if (!booleanAddMeal) {
-      fetchStock(); // Ejecuta la función cuando se carga el componente
-    }
-  }, [booleanAddMeal]);
+    fetchStock();
+  }, [stock]);
 
   const handleInputChange = (field, value) => {
     switch (field) {
@@ -48,6 +47,12 @@ function MyStock() {
     }
   };
 
+  const handleInputUpdateChange = (index, value) => {
+    const newStock = [...stock];
+    newStock[index].quantity = value;
+    setStock(newStock);
+  }
+
   const handleSaveButton = async () => {
     const mealData = {
       food,
@@ -60,12 +65,39 @@ function MyStock() {
     setUnit("g");
 
     try {
-      await addDoc(collection(db, "stock"), mealData);
+      await setDoc(doc(db, "stock", mealData.food), mealData);
     } catch (e) {
       console.error("Error al guardar la dieta: ", e);
     }
 
     setBooleanAddMeal(false);
+  }
+
+  const handleSaveUpdateButton = async (index) => {
+    const food = stock[index];
+
+    try {
+      await setDoc(doc(db, "stock", food.food), food, { merge: true });
+    } catch (e) {
+      console.error("Error al guardar la dieta: ", e);
+    }
+  }
+
+  const handleDeleteButton = async (index) => {
+    const food = stock[index];
+    
+    const newStock = [...stock];
+    newStock.splice(index, 1);
+    setStock(newStock);
+
+    try {
+      const foodDocRef = doc(db, "stock", food.food);
+      await deleteDoc(foodDocRef);
+      console.log(`Food ${food.food} deleted from stock`);
+      
+    } catch (error) {
+        console.error("Error deleting food from stock:", error);
+    }
   }
 
   return (
@@ -98,11 +130,29 @@ function MyStock() {
         </div>
       )}
 
-      {stock.map((meal, i) => (
-        <div key={`meal-${i}`}>
-          <label>{meal.food}: {meal.quantity} {meal.unit}</label>
-        </div>
-      ))}
+      <div>
+        <h2>Stock:</h2>
+        {stock ? ( // Verifica si stock no es null
+          <ul>
+            {stock.map((food, i) => (
+              <li key={food.id} className={styles["ingredient"]}>
+              <label htmlFor={`food-${food.id}`}>{food.food}: </label>
+              <input
+                id={`food-${food.id}`}
+                type="number"
+                value={food.quantity}
+                onChange={(e) => handleInputUpdateChange(i, e.target.value)} // Aquí puedes manejar el cambio
+              />
+              <span>{food.unit}</span>
+              <button onClick={() => handleSaveUpdateButton(i)}>Actualizar</button>
+              <button onClick={() => handleDeleteButton(i)}>Eliminar</button>
+            </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No hay alimentos en el stock.</p> // Mensaje alternativo si no hay selección
+        )}
+      </div>
     </div>
   );
 }

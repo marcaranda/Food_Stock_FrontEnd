@@ -39,9 +39,9 @@ function DietDetails() {
         const stockCollectionRef = collection(db, 'stock');
         const querySnapshot = await getDocs(stockCollectionRef);
         const stockData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          data: doc.data()
+          ...doc.data()
         }));
+        console.log('Stock:', stockData);
         setStock(stockData);
 
       } catch (error) {
@@ -64,10 +64,10 @@ function DietDetails() {
     console.log('Meal confirmed:', meal);
 
     for (const ingredient of meal.ingredients) {
-      let food = stock.find(item => item.data.food === ingredient.food);
-      food.data.quantity -= parseFloat(ingredient.quantity);
+      let food = stock.find(item => item.food === ingredient.food);
+      food.quantity -= parseFloat(ingredient.quantity);
 
-      if (food.data.quantity <= 0) {
+      if (food.quantity <= 0) {
         deleteFoodStock(food);
       }
       else {
@@ -78,9 +78,9 @@ function DietDetails() {
 
   const deleteFoodStock = async (food) => {
     try {
-      const foodDocRef = doc(db, "stock", food.id); // asume que 'food.food' es el ID del documento
+      const foodDocRef = doc(db, "stock", food.food);
       await deleteDoc(foodDocRef);
-      console.log(`Food ${food.data.food} deleted from stock`);
+      console.log(`Food ${food.food} deleted from stock`);
     } catch (error) {
         console.error("Error deleting food from stock:", error);
     }
@@ -88,16 +88,9 @@ function DietDetails() {
 
   const saveFoodStock = async (food) => {
     try {
-      const foodDocRef = doc(db, "stock", food.id); // asume que 'food.food' es el ID del documento
+      await setDoc(doc(db, "stock", food.food), food, { merge: true });
 
-      // Se usa `setDoc` para sobrescribir o crear el documento si no existe
-      await setDoc(foodDocRef, {
-          food: food.data.food,
-          unit: food.data.unit,
-          quantity: food.data.quantity
-      }, { merge: true }); // merge: true asegura que no se sobrescriban campos innecesarios
-
-      console.log(`Food ${food.data.food} updated in stock`);
+      console.log(`Food ${food.food} updated in stock`);
     } catch (error) {
         console.error("Error saving food in stock:", error);
     }

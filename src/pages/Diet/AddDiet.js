@@ -4,7 +4,7 @@ import DropDown from "../../components/DropDown";
 import styles from "./AddDiet.module.css";
 
 import { db } from "../../firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 
 function AddDiet() {
   const navigate = useNavigate();
@@ -72,9 +72,10 @@ function AddDiet() {
     if (mealWeekData.length === 7 && mealWeekData.every(dayMeals => dayMeals.length > 0)) {
       saveToDatabase();
     }
+    // eslint-disable-next-line
   }, [mealWeekData]);
 
-  // eslint-disable-next-line
+  
   const saveToDatabase = async () => {
     console.log("guardar dieta");
       const foodTotals = {};
@@ -105,7 +106,7 @@ function AddDiet() {
       };
 
       try {
-        await addDoc(collection(db, "diets"), dietData);
+        await setDoc(doc(db, "diets", dietData.dietName), dietData);
         navigate("/");
       } catch (e) {
         console.error("Error al guardar la dieta: ", e);
