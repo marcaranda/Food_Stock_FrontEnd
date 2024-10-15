@@ -135,13 +135,13 @@ function MyStock() {
         {stock ? ( // Verifica si stock no es null
           <ul>
             {stock.map((food, i) => (
-              <li key={food.id} className="ingredient">
-              <label htmlFor={`food-${food.id}`}>{food.food}: </label>
+              <li key={food.food} className="ingredient">
+              <label htmlFor={`food-${food.food}`}>{food.food}: </label>
               <input
-                id={`food-${food.id}`}
+                id={`food-${food.food}`}
                 type="number"
                 value={food.quantity}
-                onChange={(e) => handleInputUpdateChange(i, e.target.value)} // Aquí puedes manejar el cambio
+                onChange={(e) => handleInputUpdateChange(i, e.target.value)}
               />
               <span>{food.unit}</span>
               <button onClick={() => handleSaveUpdateButton(i)}>Actualizar</button>
@@ -150,7 +150,7 @@ function MyStock() {
             ))}
           </ul>
         ) : (
-          <p>No hay alimentos en el stock.</p> // Mensaje alternativo si no hay selección
+          <p>No hay alimentos en el stock.</p>
         )}
       </div>
     </div>

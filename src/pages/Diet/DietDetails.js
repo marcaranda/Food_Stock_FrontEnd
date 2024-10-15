@@ -41,7 +41,6 @@ function DietDetails() {
         const stockData = querySnapshot.docs.map(doc => ({
           ...doc.data()
         }));
-        console.log('Stock:', stockData);
         setStock(stockData);
 
       } catch (error) {

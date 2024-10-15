@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DropDown from "../../components/DropDown";
 
 import { db } from "../../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 
 function NewShopping() {
   const navigate = useNavigate();
@@ -26,8 +26,7 @@ function NewShopping() {
         const stockCollectionRef = collection(db, 'stock');
         const querySnapshot2 = await getDocs(stockCollectionRef);
         const stockData = querySnapshot2.docs.map(doc => ({
-          id: doc.id,
-          data: doc.data()
+          ...doc.data()
         }));
         setStock(stockData);
       } catch (error) {
@@ -54,7 +53,7 @@ function NewShopping() {
     // Recorremos los alimentos requeridos por la dieta
     for (const [food, { quantity, unit }] of Object.entries(diet.totalFood)) {
       // Verificamos si el alimento existe en el stock
-      const stockItem = stock.find((item) => item.data.food === food);
+      const stockItem = stock.find((item) => item.food === food);
 
       if (!stockItem) {
         // Si el alimento no existe en el stock, lo añadimos a los faltantes
@@ -65,7 +64,7 @@ function NewShopping() {
         });
       } else {
         // Si el alimento está en el stock pero no es suficiente
-        const stockQuantity = stockItem.data.quantity;
+        const stockQuantity = stockItem.quantity;
         if (stockQuantity < quantity) {
           missing.push({
             food,
@@ -79,6 +78,43 @@ function NewShopping() {
     // Guardamos los alimentos faltantes en el estado
     setMissingItems(missing);
   };
+
+  const handleInputUpdateChange = (index, value) => {
+    const newMissingItems = [...missingItems];
+    newMissingItems[index].missingQuantity = value;
+    setMissingItems(newMissingItems);
+  }
+
+  const handleComprarButton = (food) => {
+    const newStock = [...stock];
+    let stockItem = newStock.find((item) => item.food === food.food);
+
+    if (stockItem) {
+      stockItem.quantity += parseFloat(food.missingQuantity);
+    } 
+    else {
+      stockItem = {
+        food: food.food,
+        quantity: parseFloat(food.missingQuantity),
+        unit: food.unit,
+      };
+
+      newStock.push(stockItem);
+    }
+    console.log("stockItem", stockItem); 
+    saveCompra(stockItem);
+
+    setStock(newStock);
+    calculateMissingItems(selectedDiet, newStock);
+  }
+
+  const saveCompra = async (stockItem) => {
+    try {
+      await setDoc(doc(db, "stock", stockItem.food), stockItem, { merge: true });
+    } catch (e) {
+      console.error("Error al guardar la dieta: ", e);
+    }
+  }
 
   return (
     <div>
@@ -111,8 +147,8 @@ function NewShopping() {
         {stock ? (
           <ul>
             {stock.map((food) => (
-              <li key={food.id}>
-                {food.data.food}: {food.data.quantity} {food.data.unit}
+              <li key={food.food}>
+                {food.food}: {food.quantity} {food.unit}
               </li>
             ))}
           </ul>
@@ -125,9 +161,17 @@ function NewShopping() {
         <h2>Alimentos faltantes:</h2>
         {missingItems.length > 0 ? (
           <ul>
-            {missingItems.map((item) => (
-              <li key={item.food}>
-                {item.food}: Faltan {item.missingQuantity} {item.unit}
+            {missingItems.map((food, i) => (
+              <li key={food.food}  className="ingredient">
+                <label htmlFor={`food-${food.food}`}>{food.food}: Faltan </label>
+                <input
+                id={`food-${food.food}`}
+                type="number"
+                value={food.missingQuantity}
+                onChange={(e) => handleInputUpdateChange(i, e.target.value)} // Aquí puedes manejar el cambio
+                />
+                <span>{food.unit}</span>
+                <button onClick={() => handleComprarButton(food)}>Comprar</button>
               </li>
             ))}
           </ul>
