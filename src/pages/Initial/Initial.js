@@ -1,16 +1,17 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/Initial.css";
 
 function Initial() {
   const navigate = useNavigate();
 
   return (
-    <div>
+    <div className="home-container">
       <h1>Initial page</h1>
-      <button onClick={() => navigate("/myStock")}>Mi Stock</button>
-      <button onClick={() => navigate("/myDiets")}>Mis Dietas</button>
-      <button onClick={() => navigate("/addDiet")}>Nueva Dieta</button>
-      <button onClick={() => navigate("/newShopping")}>Nueva Compra</button>
+      <button className="initial" onClick={() => navigate("/myStock")}>Mi Stock</button>
+      <button className="initial" onClick={() => navigate("/myDiets")}>Mis Dietas</button>
+      <button className="initial" onClick={() => navigate("/addDiet")}>Nueva Dieta</button>
+      <button className="initial" onClick={() => navigate("/newShopping")}>Nueva Compra</button>
     </div>
   );
 }

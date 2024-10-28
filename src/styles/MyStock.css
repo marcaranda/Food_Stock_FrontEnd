@@ -1,12 +1,81 @@
-.ingredient {
+button.home {
+  margin-top: 0;
+}
+
+button.add-food {
+  margin-bottom: 20px;
+}
+
+button.update,
+button.delete {
+  font-size: 0.9em;
+  margin-left: 5px;
+  width: 48%;
+}
+
+.stock-list {
+  width: 100%;
+  max-width: 600px;
+  list-style-type: none;
+  padding: 0;
+}
+
+.stock-item {
   display: flex;
-  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  flex-wrap: wrap; /* Permite que los elementos se muevan a la siguiente línea */
+}
+
+.stock-item label {
+  font-weight: bold;
+  margin-right: 5px;
+  flex: 1 1 100px; /* Para hacer que las etiquetas sean más flexibles en tamaño */
+}
+
+.stock-item input[type="text"] {
+  width: 80px;
+  padding: 5px;
+  font-size: 1em;
+  text-align: right;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.stock-item span {
+  margin-left: 5px;
+}
+
+.stock-title {
+  font-size: 1.5em;
+  font-weight: bold;
   margin-bottom: 10px;
 }
 
-.ingredient::before {
-  content: '•'; /* Este es el bullet que se mostrará */
-  margin-right: 10px; /* Espacio entre el bullet y el texto */
-  color: black; /* Color del bullet, lo puedes cambiar */
-  font-size: 20px; /* Tamaño del bullet */
+/* Media query para pantallas móviles */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5em;
+  }
+
+  .stock-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stock-item input[type="text"], 
+  .stock-item span {
+    width: 100%; /* Ocupa toda la anchura disponible en pantallas pequeñas */
+    margin-bottom: 10px;
+  }
+
+  button.update,
+  button.delete {
+    width: 100%; /* Los botones ocuparán toda la anchura de su contenedor */
+    margin-left: 0;
+    margin-bottom: 5px;
+  }
 }

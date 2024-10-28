@@ -101,10 +101,10 @@ function MyStock() {
   }
 
   return (
-    <div>
-      <button onClick={() => navigate("/")}>Inicio</button>
+    <div className="container">
+      <button className="home" onClick={() => navigate("/")}>Inicio</button>
       <h1>Mi Stock</h1>
-      <button onClick={() => setBooleanAddMeal(true)}>Añadir Comida</button>
+      <button className="add-food" onClick={() => setBooleanAddMeal(true)}>Añadir Comida</button>
 
       {booleanAddMeal && (
         <div>
@@ -131,11 +131,11 @@ function MyStock() {
       )}
 
       <div>
-        <h2>Stock:</h2>
+        <h2 className="stock-title">Stock:</h2>
         {stock ? ( // Verifica si stock no es null
-          <ul>
+          <ul className="stock-list">
             {stock.map((food, i) => (
-              <li key={food.food} className="ingredient">
+              <li className="stock-item" key={food.food}>
               <label htmlFor={`food-${food.food}`}>{food.food}: </label>
               <input
                 id={`food-${food.food}`}
@@ -144,8 +144,8 @@ function MyStock() {
                 onChange={(e) => handleInputUpdateChange(i, e.target.value)}
               />
               <span>{food.unit}</span>
-              <button onClick={() => handleSaveUpdateButton(i)}>Actualizar</button>
-              <button onClick={() => handleDeleteButton(i)}>Eliminar</button>
+              <button className="update" onClick={() => handleSaveUpdateButton(i)}>Actualizar</button>
+              <button className="delete" onClick={() => handleDeleteButton(i)}>Eliminar</button>
             </li>
             ))}
           </ul>
