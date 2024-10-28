@@ -1,7 +1,3 @@
-button.home {
-  margin-top: 0;
-}
-
 button.add-food {
   margin-bottom: 20px;
 }
@@ -13,9 +9,12 @@ button.delete {
   width: 48%;
 }
 
+button.save {
+  margin-top: 10px;
+}
+
 .stock-list {
   width: 100%;
-  max-width: 600px;
   list-style-type: none;
   padding: 0;
 }
@@ -35,8 +34,15 @@ button.delete {
   flex: 1 1 100px; /* Para hacer que las etiquetas sean más flexibles en tamaño */
 }
 
-.stock-item input[type="text"] {
-  width: 80px;
+.stock-item-quantity {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.stock-item input {
+  width: 75px;
   padding: 5px;
   font-size: 1em;
   text-align: right;
@@ -55,27 +61,21 @@ button.delete {
   margin-bottom: 10px;
 }
 
-/* Media query para pantallas móviles */
-@media (max-width: 600px) {
-  h1 {
-    font-size: 1.5em;
-  }
+.new-food {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 600px;
+  padding: 20px;
+  border: 1px solid #ccc;
+}
 
-  .stock-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .stock-item input[type="text"], 
-  .stock-item span {
-    width: 100%; /* Ocupa toda la anchura disponible en pantallas pequeñas */
-    margin-bottom: 10px;
-  }
-
-  button.update,
-  button.delete {
-    width: 100%; /* Los botones ocuparán toda la anchura de su contenedor */
-    margin-left: 0;
-    margin-bottom: 5px;
-  }
+.new-food input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 1em;
+  border: 1px solid #ddd;
+  border-radius: 3px;
 }

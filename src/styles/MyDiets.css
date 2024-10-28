@@ -1,0 +1,17 @@
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+button.dieta {
+  width: auto;
+  margin-bottom: 10px;
+  background-color: #1d99a1;
+}
+
+button.dieta:hover {
+  background-color: #0d5358;
+}

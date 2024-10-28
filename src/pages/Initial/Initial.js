@@ -10,7 +10,7 @@ function Initial() {
       <h1>Initial page</h1>
       <button className="initial" onClick={() => navigate("/myStock")}>Mi Stock</button>
       <button className="initial" onClick={() => navigate("/myDiets")}>Mis Dietas</button>
-      <button className="initial" onClick={() => navigate("/addDiet")}>Nueva Dieta</button>
+      <button className="initial" onClick={() => navigate("/addDiet")}>Añadir Dieta</button>
       <button className="initial" onClick={() => navigate("/newShopping")}>Nueva Compra</button>
     </div>
   );

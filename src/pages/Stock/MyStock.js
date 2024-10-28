@@ -34,8 +34,9 @@ function MyStock() {
       }
     }
 
+
     fetchStock();
-  }, [stock]);
+  }, []);
 
   const handleInputChange = (field, value) => {
     switch (field) {
@@ -60,11 +61,17 @@ function MyStock() {
   }
 
   const handleSaveButton = async () => {
+    const foodFormated = food.charAt(0).toUpperCase() + food.slice(1).toLowerCase();
+
     const mealData = {
-      food,
+      food: foodFormated,
       quantity,
       unit,
     };
+
+    const newStock = [...stock];
+    newStock.push(mealData);
+    setStock(newStock);
 
     setFood("");
     setQuantity("");
@@ -160,12 +167,12 @@ function MyStock() {
 
   return (
     <div className="container">
-      <button className="home" onClick={() => navigate("/")}>Inicio</button>
+      <button onClick={() => navigate("/")}>Inicio</button>
       <h1>Mi Stock</h1>
-      <button className="add-food" onClick={() => setBooleanAddMeal(true)}>Añadir Comida</button>
+      <button onClick={() => setBooleanAddMeal(true)}>Añadir Comida</button>
 
       {booleanAddMeal && (
-        <div>
+        <div className="new-food">
           <input
             type="text"
             placeholder="Alimento"
@@ -184,7 +191,7 @@ function MyStock() {
             predeterminated={{ value: 'g', label: 'Gramos (g)' }}
             onSelect={(selected) => handleInputChange("unit", selected.value)}
           />
-          <button onClick={handleSaveButton}>Guardar</button>
+          <button className="save" onClick={handleSaveButton}>Guardar</button>
         </div>
       )}
 
@@ -194,14 +201,16 @@ function MyStock() {
           <ul className="stock-list">
             {stock.map((food, i) => (
               <li className="stock-item" key={food.food}>
+              <div className="stock-item-quantity">
               <label htmlFor={`food-${food.food}`}>{food.food}: </label>
-              <input
-                id={`food-${food.food}`}
-                type="number"
-                value={food.quantity}
-                onChange={(e) => handleInputUpdateChange(i, e.target.value)}
-              />
-              <span>{food.unit}</span>
+                <input
+                  id={`food-${food.food}`}
+                  type="number"
+                  value={food.quantity}
+                  onChange={(e) => handleInputUpdateChange(i, e.target.value)}
+                />
+                <span>{food.unit}</span>
+              </div>
               <button className="update" onClick={() => handleSaveUpdateButton(i)}>Actualizar</button>
               <button className="delete" onClick={() => handleDeleteButton(i)}>Eliminar</button>
             </li>

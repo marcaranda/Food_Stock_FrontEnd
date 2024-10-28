@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
+import "../../styles/MyDiets.css";
 
 function MyDiets() {
   const navigate = useNavigate();
@@ -28,12 +29,15 @@ function MyDiets() {
   }, []);
 
   return (
-    <div>
+    <div className="container">
+      <div className="header">
       <button onClick={() => navigate("/")}>Inicio</button>
+      <button onClick={() => navigate("/addDiet")}>Añadir Dieta</button>
+      </div>
       <h1>Mis Dietas</h1>
       {dietNames.map((dietName, index) => (
         <div key={index}>
-          <button onClick={() => navigate(`/myDiets/${diets[index].id}`)}>{dietName}</button>
+          <button className="dieta" onClick={() => navigate(`/myDiets/${diets[index].id}`)}>{dietName}</button>
         </div>
       ))}
     </div>
