@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../supabaseClient";
 import DropDown from "../../components/DropDown";
 import "../../styles/MyStock.css";
-
-import { db } from "../../firebase";
-import { collection, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
+import Swal from 'sweetalert2';
 
 function MyStock() {
   const navigate = useNavigate();
@@ -19,12 +18,19 @@ function MyStock() {
   useEffect(() => {
     const fetchStock = async () => {
       try {
-        const stockCollectionRef = collection(db, 'stock');
-        const querySnapshot = await getDocs(stockCollectionRef);
-        const stockData = querySnapshot.docs.map(doc => doc.data());
+        // Obtiene todos los registros de la tabla 'stock'
+        const { data: stockData, error } = await supabase
+            .from('stock')
+            .select('*'); // Selecciona todas las columnas
+    
+        if (error) {
+            throw error; // Lanza un error si la consulta falla
+        }
+    
+        // Establece el estado con los datos obtenidos
         setStock(stockData);
       } catch (error) {
-        console.error("Error al obtener el stock:", error);
+          console.error("Error al obtener el stock:", error);
       }
     }
 
@@ -65,9 +71,27 @@ function MyStock() {
     setUnit("g");
 
     try {
-      await setDoc(doc(db, "stock", mealData.food), mealData);
-    } catch (e) {
-      console.error("Error al guardar la dieta: ", e);
+      // Guarda el mealData en Supabase
+      const { data, error } = await supabase
+        .from('stock')
+        .insert([mealData]);
+
+      if (error) { 
+        throw error;
+      }
+
+      Swal.fire({
+        title: "Success!",
+        text: "Comida guardada correctamente",
+        icon: "success"
+      });
+    } catch (error) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error al guardar la comida',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
     }
 
     setBooleanAddMeal(false);
@@ -77,11 +101,29 @@ function MyStock() {
     const food = stock[index];
 
     try {
-      await setDoc(doc(db, "stock", food.food), food, { merge: true });
-    } catch (e) {
-      console.error("Error al guardar la dieta: ", e);
+      // Actualiza el registro en la tabla 'stock' con los datos de 'food'
+      const { data, error } = await supabase
+          .from('stock')
+          .upsert([food]); // upsert inserta o actualiza según si existe el registro
+
+      if (error) {
+          throw error; // Lanza un error si la actualización falla
+      }
+
+      Swal.fire({
+        title: "Success!",
+        text: "Comida actualizada correctamente",
+        icon: "success"
+      });
+    } catch (error) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error al guardar la comida',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
     }
-  }
+}
 
   const handleDeleteButton = async (index) => {
     const food = stock[index];
@@ -91,12 +133,28 @@ function MyStock() {
     setStock(newStock);
 
     try {
-      const foodDocRef = doc(db, "stock", food.food);
-      await deleteDoc(foodDocRef);
-      console.log(`Food ${food.food} deleted from stock`);
-      
+      // Elimina el registro de la tabla 'stock' basado en el identificador único
+      const { error } = await supabase
+          .from('stock')
+          .delete()
+          .eq('id', food.id); // Asegúrate de que 'food' sea el campo que identifica el registro
+
+      if (error) {
+          throw error; // Lanza un error si la eliminación falla
+      }
+
+      Swal.fire({
+        title: "Success!",
+        text: "Comida eliminada correctamente",
+        icon: "success"
+      });
     } catch (error) {
-        console.error("Error deleting food from stock:", error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error al eliminar la comida',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
     }
   }
 

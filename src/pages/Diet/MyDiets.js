@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { db } from "../../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { supabase } from "../../supabaseClient";
 
 function MyDiets() {
   const navigate = useNavigate();
@@ -12,13 +10,17 @@ function MyDiets() {
   useEffect(() => {
     const fetchDietNames = async () => {
       try {
-        const dietsCollectionRef = collection(db, 'diets');
-        const querySnapshot = await getDocs(dietsCollectionRef);
-        setDiets(querySnapshot.docs); // Guarda los documentos de las dietas en el estado
-        const dietNames = querySnapshot.docs.map(doc => doc.data().dietName);
-        setDietNames(dietNames); // Guarda los nombres de las dietas en el estado
+        const { data, error } = await supabase
+          .from('diets') // Nombre de la tabla
+          .select('*'); // Selecciona todos los campos
+
+        if (error) throw error; // Maneja el error si ocurre
+
+        setDiets(data); // Guarda los datos de las dietas en el estado
+        const dietNamesList = data.map(diet => diet.diet_name); // Suponiendo que la columna se llama 'diet_name'
+        setDietNames(dietNamesList); // Guarda los nombres de las dietas en el estado
       } catch (error) {
-        console.error("Error al obtener los dietName:", error);
+        console.error("Error al obtener los nombres de las dietas:", error);
       }
     };
 

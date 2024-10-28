@@ -2,9 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DropDown from "../../components/DropDown";
 
-import { db } from "../../firebase";
-import { collection, getDocs, setDoc, doc } from "firebase/firestore";
-
 function NewShopping() {
   const navigate = useNavigate();
   const [diets, setDiets] = useState([]);
@@ -15,7 +12,7 @@ function NewShopping() {
 
   useEffect(() => {
     const fetchDietNames = async () => {
-      try {
+      /*try {
         const dietsCollectionRef = collection(db, 'diets');
         const querySnapshot = await getDocs(dietsCollectionRef);
         setDiets(querySnapshot.docs);
@@ -31,7 +28,7 @@ function NewShopping() {
         setStock(stockData);
       } catch (error) {
         console.error("Error al obtener los dietName:", error);
-      }
+      }*/
     };
 
     fetchDietNames();
@@ -109,11 +106,11 @@ function NewShopping() {
   }
 
   const saveCompra = async (stockItem) => {
-    try {
+    /*try {
       await setDoc(doc(db, "stock", stockItem.food), stockItem, { merge: true });
     } catch (e) {
       console.error("Error al guardar la dieta: ", e);
-    }
+    }*/
   }
 
   return (

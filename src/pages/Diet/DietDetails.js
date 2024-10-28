@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
+import { supabase } from "../../supabaseClient";
 import DropDown from "../../components/DropDown";
-
-import { db } from "../../firebase";
-import { doc, getDoc, getDocs, collection, deleteDoc, setDoc } from "firebase/firestore";
 
 function DietDetails() {
   const navigate = useNavigate();
   const { dietId } = useParams();
   const [diet, setDiet] = useState(null);
-  const [stock, setStock] = useState(null);
+  const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [day, setDay] = useState(new Date().getDay());
 
@@ -27,26 +25,70 @@ function DietDetails() {
   useEffect(() => {
     const fetchDiet = async () => {
       try {
-        const dietDocRef = doc(db, 'diets', dietId); // Referencia al documento con el ID de la URL
-        const dietDoc = await getDoc(dietDocRef);
-        
-        if (dietDoc.exists()) {
-          setDiet(dietDoc.data()); // Almacena los datos de la dieta si existen
-        } else {
-          console.error('No such document!');
+        // Obtener la dieta específica
+        const { data: daysData, error: daysError } = await supabase
+          .from('days')
+          .select('id, day_number, meals(id)')
+          .eq('diet_id', dietId);
+
+        if (daysError) throw daysError;
+
+        const dietArray = [];
+
+        // Paso 2: Iterar sobre los días obtenidos
+        for (const day of daysData) {
+          const dayMealsArray = [];
+
+          // Paso 3: Obtener las comidas de cada día
+          const { data: mealsData, error: mealsError } = await supabase
+            .from('meals')
+            .select('id, meal_type, ingredients(id, food_id, quantity, unit)')
+            .eq('day_id', day.id);
+
+          if (mealsError) throw mealsError;
+
+          // Paso 4: Iterar sobre las comidas del día
+          for (const meal of mealsData) {
+            const ingredientsArray = [];
+
+            // Paso 5: Obtener los ingredientes de cada comida
+            for (const ingredient of meal.ingredients) {
+              const { data: foodData, error: foodError } = await supabase
+                .from('foods')
+                .select('food')
+                .eq('id', ingredient.food_id)
+                .single();
+
+              if (foodError) throw foodError;
+
+              // Añadir el ingrediente al array de ingredientes
+              ingredientsArray.push({
+                food: foodData.food,
+                quantity: ingredient.quantity,
+                unit: ingredient.unit
+              });
+            }
+
+            // Añadir la comida con sus ingredientes al array del día
+            dayMealsArray.push({
+              type: meal.meal_type,
+              ingredients: ingredientsArray
+            });
+          }
+
+          // Añadir el día con sus comidas al array de la dieta
+          dietArray.push({
+            day_number: day.day_number,
+            meals: dayMealsArray
+          });
         }
 
-        const stockCollectionRef = collection(db, 'stock');
-        const querySnapshot = await getDocs(stockCollectionRef);
-        const stockData = querySnapshot.docs.map(doc => ({
-          ...doc.data()
-        }));
-        setStock(stockData);
-
+        console.log('Diet:', dietArray); 
+        setDiet(dietArray);
       } catch (error) {
         console.error('Error fetching diet:', error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Establece la carga a false al finalizar
       }
     };
 
@@ -62,7 +104,7 @@ function DietDetails() {
   const handleConfirmMeal = (meal) => {
     console.log('Meal confirmed:', meal);
 
-    for (const ingredient of meal.ingredients) {
+    /*for (const ingredient of meal.ingredients) {
       let food = stock.find(item => item.food === ingredient.food);
       food.quantity -= parseFloat(ingredient.quantity);
 
@@ -72,27 +114,27 @@ function DietDetails() {
       else {
         saveFoodStock(food);
       }
-    }
+    }*/
   }
 
   const deleteFoodStock = async (food) => {
-    try {
+    /*try {
       const foodDocRef = doc(db, "stock", food.food);
       await deleteDoc(foodDocRef);
       console.log(`Food ${food.food} deleted from stock`);
     } catch (error) {
         console.error("Error deleting food from stock:", error);
-    }
+    }*/
   }
 
   const saveFoodStock = async (food) => {
-    try {
+    /*try {
       await setDoc(doc(db, "stock", food.food), food, { merge: true });
 
       console.log(`Food ${food.food} updated in stock`);
     } catch (error) {
         console.error("Error saving food in stock:", error);
-    }
+    }*/
   }
 
   if (loading) {
@@ -103,7 +145,7 @@ function DietDetails() {
     return <div>Diet not found!</div>;
   }
 
-  const selectedDayMeals = diet.days.find(d => d.day === day);
+  const selectedDayMeals = diet.find(d => d.day_number === day);
   const showTotalFood = day === 8;
 
   return (

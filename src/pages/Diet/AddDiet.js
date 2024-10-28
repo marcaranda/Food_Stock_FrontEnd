@@ -1,26 +1,25 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../supabaseClient";
 import DropDown from "../../components/DropDown";
 import "../../styles/AddDiet.css";
-
-import { db } from "../../firebase";
-import { setDoc, doc } from "firebase/firestore";
+import Swal from 'sweetalert2';
 
 function AddDiet() {
   const navigate = useNavigate();
   const [dietName, setDietName] = useState("Nueva Dieta");
   const [mealData, setMealData] = useState([]);
   const [mealWeekData, setMealWeekData] = useState([]);
-  const [day, setDay] = useState(1);
-  const [booleanDay, setBooleanDay] = useState(Array.from({ length: 7 }, () => false));
-  const [sameAllDays, setSameAllDays] = useState(false);
+  const [currentDayIndex, setCurrentDayIndex] = useState(1);
+  const [dayFlags, setDayFlags] = useState(Array.from({ length: 7 }, () => false));
+  const [sameForAllDays, setSameForAllDays] = useState(false);
 
-  const handleAddNumMeals = () => {
+  const handleAddMeal = () => {
     const newMeal = { ingredients: [] };
     setMealData([...mealData, newMeal]);
   };
 
-  const handleAddNumIngredients = (mealIndex) => {
+  const handleAddIngredient = (mealIndex) => {
     const newMealData = [...mealData];
     newMealData[mealIndex].ingredients.push({ food: "", quantity: "", unit: "g" });
     setMealData(newMealData);
@@ -44,26 +43,26 @@ function AddDiet() {
   };
 
   const handleSaveButton = () => {
-    if (sameAllDays) {
+    if (sameForAllDays) {
       setMealWeekData(Array.from({ length: 7 }, () => mealData));
     } 
-    else if (booleanDay.some((day) => day === false)) {
-      const newBooleanDay = [...booleanDay];
-      newBooleanDay[day] = true;
-      setBooleanDay(newBooleanDay);
+    else if (dayFlags.some((flag) => flag === false)) {
+      const newDayFlags = [...dayFlags];
+      newDayFlags[currentDayIndex] = true;
+      setDayFlags(newDayFlags);
 
       setMealWeekData(prev => {
         const updatedMealWeekData = [...prev];
-        updatedMealWeekData[day] = mealData;
+        updatedMealWeekData[currentDayIndex] = mealData;
         return updatedMealWeekData;
       });
 
       setMealData([]);
 
-      if (day + 1 <= 6) {
-        setDay(day + 1);
+      if (currentDayIndex + 1 <= 6) {
+        setCurrentDayIndex(currentDayIndex + 1);
       } else {
-        setDay(0);
+        setCurrentDayIndex(0);
       }
     }
   };
@@ -77,56 +76,109 @@ function AddDiet() {
 
   
   const saveToDatabase = async () => {
-    console.log("guardar dieta");
-      const foodTotals = {};
+    try {
+      console.log(mealWeekData);
 
-      mealWeekData.forEach((mealDayData) => {
-        mealDayData.forEach((meal) => {
-          meal.ingredients.forEach((ingredient) => {
+      // Primero: Guardar la dieta en la tabla `diets`
+      const { data: dietData, error: dietError } = await supabase
+        .from('diets')
+        .insert([{ diet_name: dietName }])
+        .select();
+  
+      if (dietError) throw dietError;
+  
+      const dietId = dietData[0].id; // ID de la dieta creada
+  
+      // Segundo: Recorrer los días y guardarlos en la tabla `days`
+      for (const [dayIndex, dayMeals] of mealWeekData.entries()) {
+        const { data: dayData, error: dayError } = await supabase
+          .from('days')
+          .insert([{ diet_id: dietId, day_number: dayIndex + 1 }])
+          .select();
+  
+        if (dayError) throw dayError;
+  
+        const dayId = dayData[0].id; // ID del día creado
+  
+        // Tercero: Guardar cada comida del día en la tabla `meals`
+        for (const meal of dayMeals) {
+          const { data: mealData, error: mealError } = await supabase
+            .from('meals')
+            .insert([{ day_id: dayId, meal_type: meal.type || 'Comida' }]) // Usar un valor predeterminado para meal_type
+            .select();
+  
+          if (mealError) throw mealError;
+  
+          const mealId = mealData[0].id; // ID de la comida creada
+  
+          // Cuarto: Iterar sobre los ingredientes y guardarlos
+          for (const ingredient of meal.ingredients) {
             const { food, quantity, unit } = ingredient;
-      
-            if (foodTotals[food]) {
-              foodTotals[food].quantity += parseFloat(quantity);
+  
+            // Verificar si el alimento ya existe en `foods`
+            const { data: existingFood, error: foodFetchError } = await supabase
+              .from('foods')
+              .select('id')
+              .eq('food', food)
+              .single();
+  
+            let foodId;
+  
+            if (foodFetchError) {
+              // Insertar el alimento si no existe
+              const { data: newFood, error: foodInsertError } = await supabase
+                .from('foods')
+                .insert([{ food, unit }])
+                .select();
+  
+              if (foodInsertError) throw foodInsertError;
+  
+              foodId = newFood[0].id;
             } else {
-              foodTotals[food] = { quantity: parseFloat(quantity), unit };
+              // Si el alimento ya existe, obtener su `id`
+              foodId = existingFood.id;
             }
-          });
-        });
-      });
-
-      const dietData = {
-        dietName,
-        days: mealWeekData.map((dayMeals, index) => ({
-          day: index + 1,
-          meals: dayMeals.map(meal => ({
-            ingredients: meal.ingredients,
-          })),
-        })),
-        totalFood: foodTotals,
-      };
-
-      try {
-        await setDoc(doc(db, "diets", dietData.dietName), dietData);
-        navigate("/");
-      } catch (e) {
-        console.error("Error al guardar la dieta: ", e);
+  
+            // Guardar el ingrediente en la tabla `ingredients`
+            const { error: ingredientError } = await supabase
+              .from('ingredients')
+              .insert([{ meal_id: mealId, food_id: foodId, quantity, unit }]);
+  
+            if (ingredientError) throw ingredientError;
+          }
+        }
       }
+  
+      Swal.fire({
+        title: "Success!",
+        text: "Dieta guardada correctamente",
+        icon: "success"
+      });
+      navigate("/myDiets");
+    } catch (error) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error al guardar la dieta',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
+    }
   };
 
   const handleDayChange = (value) => {
-    setDay(value);
+    setCurrentDayIndex(value);
     setMealData([]);
-  }
+  };
 
-  const handleSameAllDays = () => {
-    setSameAllDays(!sameAllDays);
-  }
+  const handleSameForAllDaysToggle = () => {
+    setSameForAllDays(!sameForAllDays);
+  };
 
   return (
     <div>
       <button onClick={() => navigate("/")}>Inicio</button>
       <h1>Añadir Dieta</h1>
-      <input type="text" placeholder="Nombre de la dieta" value={dietName} onChange={(e) => setDietName(e.target.value)}/>
+      <input type="text" placeholder="Nombre de la dieta" value={dietName} onChange={(e) => setDietName(e.target.value)} />
 
       <DropDown
         options={[
@@ -142,13 +194,13 @@ function AddDiet() {
         onSelect={(selected) => handleDayChange(selected.value)}
       />
 
-      <button onClick={handleAddNumMeals}>Añadir Comida</button>
-      <button onClick={handleSameAllDays}>{sameAllDays ? 'Checked' : 'Check'}</button>
+      <button onClick={handleAddMeal}>Añadir Comida</button>
+      <button onClick={handleSameForAllDaysToggle}>{sameForAllDays ? 'Checked' : 'Check'}</button>
       {mealData.map((meal, i) => (
         <div key={`meal-${i}`} className="new-meal">
           <div className="ingredient-header">
             <label>Comida {i + 1}:</label>
-            <button onClick={() => handleAddNumIngredients(i)}>Añadir Alimento</button>
+            <button onClick={() => handleAddIngredient(i)}>Añadir Alimento</button>
             <button onClick={() => handleDeleteMeal(i)}>Eliminar Comida</button>
           </div>
           {meal.ingredients.map((ingredient, j) => (
@@ -172,7 +224,7 @@ function AddDiet() {
                   { value: 'u', label: 'Unidades (u)' },
                 ]}
                 predeterminated={{ value: ingredient.unit, label: ingredient.unit === 'g' ? 'Gramos (g)' : 'Unidades (u)' }}
-                onSelect={(selected) => handleInputChange(i, j, "unit", selected.value)} // Necesitarás agregar una función para manejar el cambio
+                onSelect={(selected) => handleInputChange(i, j, "unit", selected.value)} 
               />
               <button onClick={() => handleDeleteIngredient(i, j)}>Eliminar Alimento</button>
             </div>
@@ -184,4 +236,4 @@ function AddDiet() {
   );
 }
 
-export default AddDiet
+export default AddDiet;
