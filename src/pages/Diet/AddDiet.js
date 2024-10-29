@@ -175,8 +175,10 @@ function AddDiet() {
   };
 
   return (
-    <div>
+    <div className="container">
+    <div className="header">
       <button onClick={() => navigate("/")}>Inicio</button>
+    </div>
       <h1>Añadir Dieta</h1>
       <input type="text" placeholder="Nombre de la dieta" value={dietName} onChange={(e) => setDietName(e.target.value)} />
 
@@ -195,7 +197,7 @@ function AddDiet() {
       />
 
       <button onClick={handleAddMeal}>Añadir Comida</button>
-      <button onClick={handleSameForAllDaysToggle}>{sameForAllDays ? 'Checked' : 'Check'}</button>
+      <button onClick={handleSameForAllDaysToggle}>{sameForAllDays ? 'Misma dieta cada día' : 'Diferente dieta cada día'}</button>
       {mealData.map((meal, i) => (
         <div key={`meal-${i}`} className="new-meal">
           <div className="ingredient-header">

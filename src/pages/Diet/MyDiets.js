@@ -35,11 +35,13 @@ function MyDiets() {
       <button onClick={() => navigate("/addDiet")}>Añadir Dieta</button>
       </div>
       <h1>Mis Dietas</h1>
-      {dietNames.map((dietName, index) => (
-        <div key={index}>
-          <button className="dieta" onClick={() => navigate(`/myDiets/${diets[index].id}`)}>{dietName}</button>
-        </div>
-      ))}
+      <ul className="diet-list">
+        {dietNames.map((dietName, index) => (
+          <li className="diet-item" key={index}>
+            <button onClick={() => navigate(`/myDiets/${diets[index].id}`)}>{dietName}</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -167,7 +167,9 @@ function MyStock() {
 
   return (
     <div className="container">
-      <button onClick={() => navigate("/")}>Inicio</button>
+      <div className="header">
+        <button onClick={() => navigate("/")}>Inicio</button>
+      </div>
       <h1>Mi Stock</h1>
       <button onClick={() => setBooleanAddMeal(true)}>Añadir Comida</button>
 
@@ -191,7 +193,10 @@ function MyStock() {
             predeterminated={{ value: 'g', label: 'Gramos (g)' }}
             onSelect={(selected) => handleInputChange("unit", selected.value)}
           />
-          <button className="save" onClick={handleSaveButton}>Guardar</button>
+          <div className="buttons-new-food">
+            <button onClick={handleSaveButton}>Guardar</button>
+            <button onClick={() => setBooleanAddMeal(false)}>Cancelar</button>
+          </div>
         </div>
       )}
 
