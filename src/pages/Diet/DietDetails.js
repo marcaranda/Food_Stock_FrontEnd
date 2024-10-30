@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { supabase } from "../../supabaseClient";
 import DropDown from "../../components/DropDown";
+import "../../styles/DietDetails.css";
 
 function DietDetails() {
   const navigate = useNavigate();
@@ -149,9 +150,12 @@ function DietDetails() {
   const showTotalFood = day === 8;
 
   return (
-    <div>
-      <button onClick={() => navigate("/")}>Inicio</button>
-      <button onClick={() => navigate("/myDiets")}>Volver</button>
+    <div className="container">
+      <div className="header">
+        <button onClick={() => navigate("/")}>Inicio</button>
+        <button onClick={() => navigate("/myDiets")}>Volver</button>
+      </div>
+
       <h1>{diet.dietName}</h1>
 
       <DropDown
@@ -184,14 +188,19 @@ function DietDetails() {
         <>
           <h2>Comidas del {dayToLabelMap[day]}:</h2>
           {selectedDayMeals ? (
-            <ul>
+            <ul className="meal-list">
               {selectedDayMeals.meals.map((meal, index) => (
-                <li key={index}>
-                  <h3>Comida {index + 1}:</h3>
-                  <button onClick={() => handleConfirmMeal(meal)}>Confirmar</button>
-                  <ul>
+                <li className="meal-item" key={index}>
+                  <div className="meal-header">
+                    <h3>Comida {index + 1}:</h3>
+                    <div className="meal-buttons">
+                      <button onClick={() => handleConfirmMeal(meal)}>Confirmar</button>
+                      <button onClick={() => handleConfirmMeal(meal)}>Editar</button>
+                    </div>
+                  </div>
+                  <ul className="ingredient-list">
                     {meal.ingredients.map((ingredient, i) => (
-                      <li key={i}>
+                      <li className="ingredient-item" key={i}>
                         {ingredient.food}: {ingredient.quantity} {ingredient.unit}
                       </li>
                     ))}

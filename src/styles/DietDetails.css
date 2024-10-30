@@ -1,0 +1,37 @@
+.meal-list {
+  width: 100%;
+  list-style-type: none;
+  padding: 0;
+}
+
+.meal-item {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  flex-wrap: wrap; /* Permite que los elementos se muevan a la siguiente línea */
+}
+
+.meal-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.meal-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 185px;
+}
+
+.ingredient-list {
+  width: 100%;
+  list-style-type: none;
+  padding: 0;
+}
+
+.ingredient-item {
+  padding: 10px;
+  flex-wrap: wrap; /* Permite que los elementos se muevan a la siguiente línea */
+}

@@ -16,9 +16,6 @@ button.delete {
 }
 
 .stock-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 10px;
   border-bottom: 1px solid #ccc;
   flex-wrap: wrap; /* Permite que los elementos se muevan a la siguiente línea */
