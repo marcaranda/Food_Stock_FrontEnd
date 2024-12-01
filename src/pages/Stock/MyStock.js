@@ -169,6 +169,7 @@ function MyStock() {
             ]}
             predeterminated={{ value: 'g', label: 'Gramos (g)' }}
             onSelect={(selected) => handleInputChange("unit", selected.value)}
+            boolDays={false}
           />
           <div className="buttons-new-food">
             <button onClick={handleSaveButton}>Guardar</button>

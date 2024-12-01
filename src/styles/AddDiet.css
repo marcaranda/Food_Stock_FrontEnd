@@ -1,22 +1,86 @@
-.new-meal {
+.diet-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.diet-header input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 1em;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.buttons-diet-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.meal-container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 5px;
   margin-bottom: 10px;
+  border: 1px solid #ccc;
 }
 
-.new-ingredient {
+.meal-header {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 10px;
-  background-color: #e7e7e7;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.ingredient-header {
+.meal-header label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.buttons-meal-header {
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.delete-button {
+  margin-left: 10px;
+}
+
+.ingredient-container {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 10px;
-  background-color: #ccc;
+  justify-content: center;
+  padding: 5px;
+  margin-top: 10px;
+  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+}
+
+.inputs-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ingredient-container input {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 10px;
+  font-size: 1em;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.delete-ingredient-button {
+  margin-top: 10px;
 }

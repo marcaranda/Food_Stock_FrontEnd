@@ -146,6 +146,7 @@ function NewShopping() {
         options={dietNames.map((dietName) => ({ value: dietName, label: dietName }))}
         predeterminated={{ value: '', label: 'Selecciona una dieta' }}
         onSelect={(selected) => handleSelectChange(selected.value)}
+        boolDays={false}
       />
 
       <div className="space-container">

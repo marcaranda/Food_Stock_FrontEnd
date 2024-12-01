@@ -12,9 +12,19 @@ function AddDiet() {
   const [dietName, setDietName] = useState("Nueva Dieta");
   const [mealData, setMealData] = useState([]);
   const [mealWeekData, setMealWeekData] = useState([]);
-  const [currentDayIndex, setCurrentDayIndex] = useState(1);
+  const [currentDayIndex, setCurrentDayIndex] = useState({ value: '1', label: 'Lunes' });
   const [dayFlags, setDayFlags] = useState(Array.from({ length: 7 }, () => false));
   const [sameForAllDays, setSameForAllDays] = useState(false);
+
+  const dayOptions = [
+    { value: '0', label: 'Domingo' },
+    { value: '1', label: 'Lunes' },
+    { value: '2', label: 'Martes' },
+    { value: '3', label: 'Miércoles' },
+    { value: '4', label: 'Jueves' },
+    { value: '5', label: 'Viernes' },
+    { value: '6', label: 'Sábado' }
+  ]
 
   const handleAddMeal = () => {
     const newMeal = { ingredients: [] };
@@ -47,25 +57,32 @@ function AddDiet() {
   const handleSaveButton = () => {
     if (sameForAllDays) {
       setMealWeekData(Array.from({ length: 7 }, () => mealData));
+      setDayFlags(Array.from({ length: 7 }, () => true));
     } 
     else if (dayFlags.some((flag) => flag === false)) {
       const newDayFlags = [...dayFlags];
-      newDayFlags[currentDayIndex] = true;
+      newDayFlags[currentDayIndex.value] = true;
       setDayFlags(newDayFlags);
 
       setMealWeekData(prev => {
         const updatedMealWeekData = [...prev];
-        updatedMealWeekData[currentDayIndex] = mealData;
+        updatedMealWeekData[currentDayIndex.value] = mealData;
         return updatedMealWeekData;
       });
 
       setMealData([]);
 
-      if (currentDayIndex + 1 <= 6) {
-        setCurrentDayIndex(currentDayIndex + 1);
+      if (parseInt(currentDayIndex.value) + 1 <= 6) {
+        setCurrentDayIndex(dayOptions.find(option => option.value === (parseInt(currentDayIndex.value) + 1).toString()));
       } else {
-        setCurrentDayIndex(0);
+        setCurrentDayIndex({ value: '0', label: 'Domingo' });
       }
+
+      Swal.fire({
+        title: "Success!",
+        text: "Día guardado correctamente",
+        icon: "success"
+      });
     }
   };
 
@@ -138,34 +155,38 @@ function AddDiet() {
       <button onClick={() => navigate("/")}>Inicio</button>
     </div>
       <h1>Añadir Dieta</h1>
-      <input type="text" placeholder="Nombre de la dieta" value={dietName} onChange={(e) => setDietName(e.target.value)} />
-
-      <DropDown
-        options={[
-          { value: '1', label: 'Lunes' },
-          { value: '2', label: 'Martes' },
-          { value: '3', label: 'Miércoles' },
-          { value: '4', label: 'Jueves' },
-          { value: '5', label: 'Viernes' },
-          { value: '6', label: 'Sábado' },
-          { value: '0', label: 'Domingo' },
-        ]}
-        predeterminated={{ value: 1, label: "Lunes" }}
-        onSelect={(selected) => handleDayChange(selected.value)}
-      />
-
-      <button onClick={handleAddMeal}>Añadir Comida</button>
-      <button onClick={handleSameForAllDaysToggle}>{sameForAllDays ? 'Misma dieta cada día' : 'Diferente dieta cada día'}</button>
+      
+      <div className="diet-header">
+        <input
+          type="text" 
+          placeholder="Nombre de la dieta" 
+          value={dietName} 
+          onChange={(e) => setDietName(e.target.value)} 
+        />
+        <DropDown
+          options={dayOptions}
+          predeterminated={currentDayIndex}
+          onSelect={(selected) => handleDayChange(selected)}
+          boolDays={true}
+          daysStatus={dayFlags}
+        />
+        <div className="buttons-diet-header">
+          <button onClick={handleAddMeal}>Añadir Comida</button>
+          <button onClick={handleSameForAllDaysToggle}>{sameForAllDays ? 'Diferente dieta cada día' : 'Misma dieta cada día'}</button>
+        </div>
+      </div>
+      
       {mealData.map((meal, i) => (
-        <div key={`meal-${i}`} className="new-meal">
-          <div className="ingredient-header">
+        <div key={`meal-${i}`} className="meal-container">
+          <div className="meal-header">
             <label>Comida {i + 1}:</label>
-            <button onClick={() => handleAddIngredient(i)}>Añadir Alimento</button>
-            <button onClick={() => handleDeleteMeal(i)}>Eliminar Comida</button>
+            <div className="buttons-meal-header">
+              <button onClick={() => handleAddIngredient(i)}>Añadir Alimento</button>
+              <button className="delete-button" onClick={() => handleDeleteMeal(i)}>Eliminar Comida</button>
+            </div>
           </div>
           {meal.ingredients.map((ingredient, j) => (
-            <div key={`ingredient-${i}-${j}`} className="new-ingredient">
-              <label>Alimento {j + 1}:</label>
+            <div key={`ingredient-${i}-${j}`} className="ingredient-container">
               <input
                 type="text"
                 placeholder="Alimento"
@@ -185,8 +206,9 @@ function AddDiet() {
                 ]}
                 predeterminated={{ value: ingredient.unit, label: ingredient.unit === 'g' ? 'Gramos (g)' : 'Unidades (u)' }}
                 onSelect={(selected) => handleInputChange(i, j, "unit", selected.value)} 
+                boolDays={false}
               />
-              <button onClick={() => handleDeleteIngredient(i, j)}>Eliminar Alimento</button>
+              <button className="delete-ingredient-button" onClick={() => handleDeleteIngredient(i, j)}>Eliminar Alimento</button>
             </div>
           ))}
         </div>

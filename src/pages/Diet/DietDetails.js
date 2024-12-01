@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { getUrl } from "../../data/Constants";
 import DropDown from "../../components/DropDown";
+import Swal from 'sweetalert2';
 import axios from "axios";
 import "../../styles/DietDetails.css";
 
@@ -12,7 +13,6 @@ function DietDetails() {
   const { dietName } = useParams();
   const [diet, setDiet] = useState([]);
   const [totalFood, setTotalFood] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [day, setDay] = useState(new Date().getDay());
 
   const dayToLabelMap = {
@@ -39,8 +39,6 @@ function DietDetails() {
           });
       } catch (error) {
         console.error('Error fetching diet:', error);
-      } finally {
-        setLoading(false); // Establece la carga a false al finalizar
       }
     };
 
@@ -53,15 +51,39 @@ function DietDetails() {
   }
 
   const handleConfirmMeal = (meal) => {
-    console.log('Meal confirmed:', meal);
+    try {
+      meal.map((ingredientObject) => (
+        Object.entries(ingredientObject).map(([ingredientKey, ingredient]) => (
+          axios.get(`${url}stock/${ingredient.name}`)
+            .then((response) => {
+              const newStock = {
+                name: response.data.stock.name,
+                quantity: response.data.stock.quantity - ingredient.quantity,
+                unit: response.data.stock.unit,
+              }
+
+              axios.put(`${url}stock/`, newStock)
+            })
+        ))
+      ));
+
+      Swal.fire({
+        title: "Success!",
+        text: "Stock modificado correctamente",
+        icon: "success"
+      });
+    } catch (error) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error al obtener el stock',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
+    }
   }
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!diet) {
-    return <div>Diet not found!</div>;
+  const handleEditMeal = (meal) => {
+    console.log(meal);
   }
 
   const showTotalFood = day === 8;
@@ -97,6 +119,7 @@ function DietDetails() {
         ]}
         predeterminated={{ value: day, label: dayToLabelMap[day] }}
         onSelect={(selected) => handleDayChange(selected.value)}
+        boolDays={false}
       />
 
       {showTotalFood ? (
