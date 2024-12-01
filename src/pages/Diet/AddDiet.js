@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../../supabaseClient";
+import { getUrl } from "../../data/Constants";
 import DropDown from "../../components/DropDown";
-import "../../styles/AddDiet.css";
 import Swal from 'sweetalert2';
+import axios from "axios";
+import "../../styles/AddDiet.css";
 
 function AddDiet() {
   const navigate = useNavigate();
+  const url = getUrl();
   const [dietName, setDietName] = useState("Nueva Dieta");
   const [mealData, setMealData] = useState([]);
   const [mealWeekData, setMealWeekData] = useState([]);
@@ -77,77 +79,33 @@ function AddDiet() {
   
   const saveToDatabase = async () => {
     try {
-      console.log(mealWeekData);
+      const dayNames = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+      const transformedDays = {};
 
-      // Primero: Guardar la dieta en la tabla `diets`
-      const { data: dietData, error: dietError } = await supabase
-        .from('diets')
-        .insert([{ diet_name: dietName }])
-        .select();
-  
-      if (dietError) throw dietError;
-  
-      const dietId = dietData[0].id; // ID de la dieta creada
-  
-      // Segundo: Recorrer los días y guardarlos en la tabla `days`
-      for (const [dayIndex, dayMeals] of mealWeekData.entries()) {
-        const { data: dayData, error: dayError } = await supabase
-          .from('days')
-          .insert([{ diet_id: dietId, day_number: dayIndex + 1 }])
-          .select();
-  
-        if (dayError) throw dayError;
-  
-        const dayId = dayData[0].id; // ID del día creado
-  
-        // Tercero: Guardar cada comida del día en la tabla `meals`
-        for (const meal of dayMeals) {
-          const { data: mealData, error: mealError } = await supabase
-            .from('meals')
-            .insert([{ day_id: dayId, meal_type: meal.type || 'Comida' }]) // Usar un valor predeterminado para meal_type
-            .select();
-  
-          if (mealError) throw mealError;
-  
-          const mealId = mealData[0].id; // ID de la comida creada
-  
-          // Cuarto: Iterar sobre los ingredientes y guardarlos
-          for (const ingredient of meal.ingredients) {
-            const { food, quantity, unit } = ingredient;
-  
-            // Verificar si el alimento ya existe en `foods`
-            const { data: existingFood, error: foodFetchError } = await supabase
-              .from('foods')
-              .select('id')
-              .eq('food', food)
-              .single();
-  
-            let foodId;
-  
-            if (foodFetchError) {
-              // Insertar el alimento si no existe
-              const { data: newFood, error: foodInsertError } = await supabase
-                .from('foods')
-                .insert([{ food, unit }])
-                .select();
-  
-              if (foodInsertError) throw foodInsertError;
-  
-              foodId = newFood[0].id;
-            } else {
-              // Si el alimento ya existe, obtener su `id`
-              foodId = existingFood.id;
-            }
-  
-            // Guardar el ingrediente en la tabla `ingredients`
-            const { error: ingredientError } = await supabase
-              .from('ingredients')
-              .insert([{ meal_id: mealId, food_id: foodId, quantity, unit }]);
-  
-            if (ingredientError) throw ingredientError;
-          }
-        }
-      }
+      mealWeekData.forEach((dayMeals, dayIndex) => {
+        const dayName = dayNames[dayIndex];
+        transformedDays[dayName] = {};
+
+        dayMeals.forEach((meal, mealIndex) => {
+          const mealName = `comida${mealIndex + 1}`;
+          const ingredients = {};
+
+          meal.ingredients.forEach((ingredient, ingredientIndex) => {
+            ingredients[`alimento${ingredientIndex + 1}`] = {
+              name: ingredient.food,
+              quantity: parseInt(ingredient.quantity, 10),
+              unit: ingredient.unit,
+            };
+          });
+
+          transformedDays[dayName][mealName] = [ingredients];
+        });
+      });
+
+      axios.post(`${url}diet`, {
+        name: dietName,
+        days: transformedDays,
+      });
   
       Swal.fire({
         title: "Success!",

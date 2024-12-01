@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../../supabaseClient";
+import { getUrl } from "../../data/Constants";
 import DropDown from "../../components/DropDown";
-import "../../styles/MyStock.css";
 import Swal from 'sweetalert2';
+import axios from "axios";
+import "../../styles/MyStock.css";
 
 function MyStock() {
   const navigate = useNavigate();
+  const url = getUrl();
 
   const [food, setFood] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -19,23 +21,17 @@ function MyStock() {
     const fetchStock = async () => {
       try {
         // Obtiene todos los registros de la tabla 'stock'
-        const { data: stockData, error } = await supabase
-            .from('stock')
-            .select('*'); // Selecciona todas las columnas
-    
-        if (error) {
-            throw error; // Lanza un error si la consulta falla
-        }
-    
-        // Establece el estado con los datos obtenidos
-        setStock(stockData);
+        axios.get(`${url}stock`)
+          .then((response) => {
+            setStock(response.data.stocks);
+          })
       } catch (error) {
           console.error("Error al obtener el stock:", error);
       }
     }
 
-
     fetchStock();
+    // eslint-disable-next-line
   }, []);
 
   const handleInputChange = (field, value) => {
@@ -64,7 +60,7 @@ function MyStock() {
     const foodFormated = food.charAt(0).toUpperCase() + food.slice(1).toLowerCase();
 
     const mealData = {
-      food: foodFormated,
+      name: foodFormated,
       quantity,
       unit,
     };
@@ -78,14 +74,8 @@ function MyStock() {
     setUnit("g");
 
     try {
-      // Guarda el mealData en Supabase
-      const { data, error } = await supabase
-        .from('stock')
-        .insert([mealData]);
-
-      if (error) { 
-        throw error;
-      }
+      // Guarda el mealData en MongoDB
+      axios.post(`${url}stock`, mealData);
 
       Swal.fire({
         title: "Success!",
@@ -109,13 +99,7 @@ function MyStock() {
 
     try {
       // Actualiza el registro en la tabla 'stock' con los datos de 'food'
-      const { data, error } = await supabase
-          .from('stock')
-          .upsert([food]); // upsert inserta o actualiza según si existe el registro
-
-      if (error) {
-          throw error; // Lanza un error si la actualización falla
-      }
+      axios.put(`${url}stock`, food);
 
       Swal.fire({
         title: "Success!",
@@ -141,14 +125,7 @@ function MyStock() {
 
     try {
       // Elimina el registro de la tabla 'stock' basado en el identificador único
-      const { error } = await supabase
-          .from('stock')
-          .delete()
-          .eq('id', food.id); // Asegúrate de que 'food' sea el campo que identifica el registro
-
-      if (error) {
-          throw error; // Lanza un error si la eliminación falla
-      }
+      axios.delete(`${url}stock/${food.name}`);
 
       Swal.fire({
         title: "Success!",
@@ -171,8 +148,8 @@ function MyStock() {
         <button onClick={() => navigate("/")}>Inicio</button>
       </div>
       <h1>Mi Stock</h1>
-      <button onClick={() => setBooleanAddMeal(true)}>Añadir Comida</button>
 
+      <button onClick={() => setBooleanAddMeal(true)}>Añadir Comida</button>
       {booleanAddMeal && (
         <div className="new-food">
           <input
@@ -205,20 +182,20 @@ function MyStock() {
         {stock ? ( // Verifica si stock no es null
           <ul className="stock-list">
             {stock.map((food, i) => (
-              <li className="stock-item" key={food.food}>
-              <div className="stock-item-quantity">
-              <label htmlFor={`food-${food.food}`}>{food.food}: </label>
-                <input
-                  id={`food-${food.food}`}
-                  type="number"
-                  value={food.quantity}
-                  onChange={(e) => handleInputUpdateChange(i, e.target.value)}
-                />
-                <span>{food.unit}</span>
-              </div>
-              <button className="update" onClick={() => handleSaveUpdateButton(i)}>Actualizar</button>
-              <button className="delete" onClick={() => handleDeleteButton(i)}>Eliminar</button>
-            </li>
+              <li className="stock-item" key={food.name}>
+                <div className="stock-item-quantity">
+                  <label htmlFor={`food-${food.name}`}>{food.name}: </label>
+                    <input
+                      id={`food-${food.name}`}
+                      type="number"
+                      value={food.quantity}
+                      onChange={(e) => handleInputUpdateChange(i, e.target.value)}
+                    />
+                    <span>{food.unit}</span>
+                </div>
+                <button className="update" onClick={() => handleSaveUpdateButton(i)}>Actualizar</button>
+                <button className="delete" onClick={() => handleDeleteButton(i)}>Eliminar</button>
+              </li>
             ))}
           </ul>
         ) : (

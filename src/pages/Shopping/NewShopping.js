@@ -1,43 +1,53 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getUrl } from "../../data/Constants";
 import DropDown from "../../components/DropDown";
+import Swal from 'sweetalert2';
+import axios from "axios";
+import "../../styles/NewShopping.css";
 
 function NewShopping() {
   const navigate = useNavigate();
+  const url = getUrl();
   const [diets, setDiets] = useState([]);
   const [dietNames, setDietNames] = useState([]);
   const [stock, setStock] = useState(null);
-  const [selectedDiet, setSelectedDiet] = useState(null); // Cambiado a null
+  const [selectedDietTotalFood, setSelectedDietTotalFood] = useState(null); // Cambiado a null
   const [missingItems, setMissingItems] = useState([]); // Estado para los alimentos faltantes
 
   useEffect(() => {
     const fetchDietNames = async () => {
-      /*try {
-        const dietsCollectionRef = collection(db, 'diets');
-        const querySnapshot = await getDocs(dietsCollectionRef);
-        setDiets(querySnapshot.docs);
-        const dietNames = querySnapshot.docs.map(doc => doc.data().dietName);
-        dietNames.push("Todas las Dietas");
-        setDietNames(dietNames);
-
-        const stockCollectionRef = collection(db, 'stock');
-        const querySnapshot2 = await getDocs(stockCollectionRef);
-        const stockData = querySnapshot2.docs.map(doc => ({
-          ...doc.data()
-        }));
-        setStock(stockData);
+      try {
+        axios.get(`${url}diet`)
+          .then((response) => {
+            const dietsData = response.data.diets;
+            setDiets(dietsData); // Guarda los datos de las dietas en el estado
+            const dietNamesList = dietsData.map(diet => diet.name); // Suponiendo que la columna se llama 'diet_name'
+            setDietNames(dietNamesList); // Guarda los nombres de las dietas en el estado
+          })
       } catch (error) {
-        console.error("Error al obtener los dietName:", error);
-      }*/
+        console.error("Error al obtener los nombres de las dietas:", error);
+      }
+
+      try {
+        // Obtiene todos los registros de la tabla 'stock'
+        axios.get(`${url}stock`)
+          .then((response) => {
+            setStock(response.data.stocks);
+          })
+      } catch (error) {
+          console.error("Error al obtener el stock:", error);
+      }
     };
 
-    fetchDietNames();
+    fetchDietNames(); // Ejecuta la función cuando se carga el componente
+    // eslint-disable-next-line
   }, []);
 
   const handleSelectChange = (selected) => {
-    const selectedDietDoc = diets.find((diet) => diet.data().dietName === selected);
-    const dietData = selectedDietDoc ? selectedDietDoc.data() : null;
-    setSelectedDiet(dietData);
+    const selectedDietDoc = diets.find((diet) => diet.name === selected);
+    const dietData = selectedDietDoc ? selectedDietDoc.totalFood : null;
+    setSelectedDietTotalFood(dietData);
     if (dietData && stock) {
       calculateMissingItems(dietData, stock);
     }
@@ -47,31 +57,30 @@ function NewShopping() {
   const calculateMissingItems = (diet, stock) => {
     const missing = [];
 
-    // Recorremos los alimentos requeridos por la dieta
-    for (const [food, { quantity, unit }] of Object.entries(diet.totalFood)) {
-      // Verificamos si el alimento existe en el stock
-      const stockItem = stock.find((item) => item.food === food);
+    // eslint-disable-next-line
+    diet.map((food) => {
+      const stockItem = stock.find((item) => item.name === food.name);
 
-      if (!stockItem) {
-        // Si el alimento no existe en el stock, lo añadimos a los faltantes
-        missing.push({
-          food,
-          missingQuantity: quantity,
-          unit,
-        });
-      } else {
-        // Si el alimento está en el stock pero no es suficiente
+      if (stockItem) {
         const stockQuantity = stockItem.quantity;
-        if (stockQuantity < quantity) {
+        if (stockQuantity < food.quantity) {
           missing.push({
-            food,
-            missingQuantity: quantity - stockQuantity,
-            unit,
+            name: food.name,
+            missingQuantity: food.quantity - stockQuantity,
+            unit: food.unit,
           });
         }
       }
-    }
+      else {
+        missing.push({
+          name: food.name,
+          missingQuantity: food.quantity,
+          unit: food.unit,
+        });
+      }
+    });
 
+    console.log(missing);
     // Guardamos los alimentos faltantes en el estado
     setMissingItems(missing);
   };
@@ -84,14 +93,14 @@ function NewShopping() {
 
   const handleComprarButton = (food) => {
     const newStock = [...stock];
-    let stockItem = newStock.find((item) => item.food === food.food);
+    let stockItem = newStock.find((item) => item.name === food.name);
 
     if (stockItem) {
       stockItem.quantity += parseFloat(food.missingQuantity);
     } 
     else {
       stockItem = {
-        food: food.food,
+        name: food.name,
         quantity: parseFloat(food.missingQuantity),
         unit: food.unit,
       };
@@ -102,20 +111,35 @@ function NewShopping() {
     saveCompra(stockItem);
 
     setStock(newStock);
-    calculateMissingItems(selectedDiet, newStock);
+    calculateMissingItems(selectedDietTotalFood, newStock);
   }
 
   const saveCompra = async (stockItem) => {
-    /*try {
-      await setDoc(doc(db, "stock", stockItem.food), stockItem, { merge: true });
-    } catch (e) {
-      console.error("Error al guardar la dieta: ", e);
-    }*/
+    try {
+      // Guarda el stockItem en MongoDB
+      axios.put(`${url}stock`, stockItem);
+
+      Swal.fire({
+        title: "Success!",
+        text: "Comida guardada correctamente",
+        icon: "success"
+      });
+    } catch (error) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error al guardar la comida',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
+    }
   }
 
   return (
-    <div>
+    <div className="container">
+      <div className="header">
       <button onClick={() => navigate("/")}>Inicio</button>
+      <button onClick={() => navigate("/myStock")}>Stock</button>
+      </div>
       <h1>Nueva Compra</h1>
 
       <DropDown
@@ -124,13 +148,13 @@ function NewShopping() {
         onSelect={(selected) => handleSelectChange(selected.value)}
       />
 
-      <div>
-        <h2>Total de Alimentos:</h2>
-        {selectedDiet ? (
+      <div className="space-container">
+        <h2 className="title">Total de Alimentos:</h2>
+        {selectedDietTotalFood ? (
           <ul>
-            {Object.entries(selectedDiet.totalFood).map(([food, { quantity, unit }]) => (
-              <li key={food}>
-                {food}: {quantity} {unit}
+            {selectedDietTotalFood.map((food, index) => (
+              <li key={index}>
+                <b>{food.name}</b>: {food.quantity} {food.unit}
               </li>
             ))}
           </ul>
@@ -139,13 +163,13 @@ function NewShopping() {
         )}
       </div>
 
-      <div>
-        <h2>Stock:</h2>
+      <div className="space-container">
+        <h2 className="title">Stock:</h2>
         {stock ? (
           <ul>
             {stock.map((food) => (
-              <li key={food.food}>
-                {food.food}: {food.quantity} {food.unit}
+              <li key={food.name}>
+                <b>{food.name}</b>: {food.quantity} {food.unit}
               </li>
             ))}
           </ul>
@@ -154,20 +178,22 @@ function NewShopping() {
         )}
       </div>
 
-      <div>
-        <h2>Alimentos faltantes:</h2>
+      <div className="space-container">
+        <h2 className="title">Alimentos faltantes:</h2>
         {missingItems.length > 0 ? (
-          <ul>
+          <ul className="missing-list">
             {missingItems.map((food, i) => (
-              <li key={food.food}  className="ingredient">
-                <label htmlFor={`food-${food.food}`}>{food.food}: Faltan </label>
-                <input
-                id={`food-${food.food}`}
-                type="number"
-                value={food.missingQuantity}
-                onChange={(e) => handleInputUpdateChange(i, e.target.value)} // Aquí puedes manejar el cambio
-                />
-                <span>{food.unit}</span>
+              <li key={food.name}  className="missing-item">
+                <div className="missing-item-quantity">
+                  <label htmlFor={`food-${food.name}`}><b>{food.name}</b>: Faltan por comprar</label>
+                  <input
+                  id={`food-${food.name}`}
+                  type="number"
+                  value={food.missingQuantity}
+                  onChange={(e) => handleInputUpdateChange(i, e.target.value)} // Aquí puedes manejar el cambio
+                  />
+                  <span>{food.unit}</span>
+                </div>
                 <button onClick={() => handleComprarButton(food)}>Comprar</button>
               </li>
             ))}

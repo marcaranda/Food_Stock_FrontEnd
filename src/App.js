@@ -14,7 +14,7 @@ function App() {
     <Routes>
       <Route path='/' element={<Initial/>} />
       <Route path="/myDiets" element={<MyDiets/>} />
-      <Route path="/myDiets/:dietId" element={<DietDetails/>} />
+      <Route path="/myDiets/:dietName" element={<DietDetails/>} />
       <Route path="/addDiet" element={<AddDiet/>} />
       <Route path="/myStock" element={<MyStock/>} />
       <Route path="/newShopping" element={<NewShopping/>} />
