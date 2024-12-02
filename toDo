@@ -2,7 +2,10 @@
 
 ## Features to Implement
 - [ ] Editar dieta.
-- [ ] Añadir componente calendario y registro de comidas.
+- [X] Añadir componente calendario y registro de comidas.
+- [ ] Añadir componente WeekCalendar a AddDiet.
+- [ ] Llamada api para tener valor nutricional
+
 - [ ] Add user authentication.
 - [ ] Implement dark mode toggle.
 

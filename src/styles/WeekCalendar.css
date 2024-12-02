@@ -1,0 +1,44 @@
+.week-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.week-body span {
+  font-size: 1.4em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.week-body button {
+  border: 1px solid #007bff;
+  border-radius: 20px;
+  padding: 10px;
+  width: 11%;
+}
+
+.week-body button:hover {
+  background-color: #155497;
+  color: #FFFFFF;
+}
+
+.selected {
+  background-color: #007bff;
+  color: #FFFFFF;
+}
+
+.non-selected {
+  background-color: #FFFFFF;
+  color: #000000;
+}
+
+.week-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
