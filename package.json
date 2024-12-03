@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@dnd-kit/core": "^6.2.0",
+    "@dnd-kit/sortable": "^9.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@emotion/cache": "^11.13.5",
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
@@ -20,6 +23,7 @@
     "firebase": "^10.14.1",
     "font-awesome-icons": "^1.6.0",
     "react": "^18.3.1",
+    "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^2.10.5",
     "react-calendar": "^5.1.0",
     "react-dom": "^18.3.1",

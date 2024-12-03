@@ -35,6 +35,11 @@
   color: #000000;
 }
 
+.day-saved {
+  background-color: #73ce61;
+  color: #000000;
+}
+
 .week-container {
   display: flex;
   flex-direction: row;

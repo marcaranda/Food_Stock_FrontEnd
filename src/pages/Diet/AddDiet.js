@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUrl } from "../../data/Constants";
+import { startOfWeek, add } from 'date-fns';
+import { es } from 'date-fns/locale';
 import DropDown from "../../components/DropDown";
+import WeekCalendar from "../../components/WeekCalendar";
 import Swal from 'sweetalert2';
 import axios from "axios";
 import "../../styles/AddDiet.css";
@@ -11,20 +14,10 @@ function AddDiet() {
   const url = getUrl();
   const [dietName, setDietName] = useState("Nueva Dieta");
   const [mealData, setMealData] = useState([]);
-  const [mealWeekData, setMealWeekData] = useState([]);
-  const [currentDayIndex, setCurrentDayIndex] = useState({ value: '1', label: 'Lunes' });
+  const [mealWeekData, setMealWeekData] = useState(Array.from({ length: 7 }, () => []));
+  const [currentDay, setCurrentDay] = useState(startOfWeek(new Date(), { locale: es }))
   const [dayFlags, setDayFlags] = useState(Array.from({ length: 7 }, () => false));
   const [sameForAllDays, setSameForAllDays] = useState(false);
-
-  const dayOptions = [
-    { value: '0', label: 'Domingo' },
-    { value: '1', label: 'Lunes' },
-    { value: '2', label: 'Martes' },
-    { value: '3', label: 'Miércoles' },
-    { value: '4', label: 'Jueves' },
-    { value: '5', label: 'Viernes' },
-    { value: '6', label: 'Sábado' }
-  ]
 
   const handleAddMeal = () => {
     const newMeal = { ingredients: [] };
@@ -60,23 +53,22 @@ function AddDiet() {
       setDayFlags(Array.from({ length: 7 }, () => true));
     } 
     else if (dayFlags.some((flag) => flag === false)) {
-      const newDayFlags = [...dayFlags];
-      newDayFlags[currentDayIndex.value] = true;
-      setDayFlags(newDayFlags);
+      setDayFlags(prevFlags => {
+        const updatedFlags = [...prevFlags];
+        updatedFlags[currentDay.getDay()] = true;
+        return updatedFlags;
+      });
 
       setMealWeekData(prev => {
         const updatedMealWeekData = [...prev];
-        updatedMealWeekData[currentDayIndex.value] = mealData;
+        updatedMealWeekData[currentDay.getDay()] = mealData;
         return updatedMealWeekData;
       });
 
-      setMealData([]);
+      const nextDate = add(currentDay, { days: 1 })
+      setCurrentDay(nextDate);
+      setMealData(mealWeekData[nextDate.getDay()]);
 
-      if (parseInt(currentDayIndex.value) + 1 <= 6) {
-        setCurrentDayIndex(dayOptions.find(option => option.value === (parseInt(currentDayIndex.value) + 1).toString()));
-      } else {
-        setCurrentDayIndex({ value: '0', label: 'Domingo' });
-      }
 
       Swal.fire({
         title: "Success!",
@@ -122,14 +114,15 @@ function AddDiet() {
       axios.post(`${url}diet`, {
         name: dietName,
         days: transformedDays,
-      });
-  
-      Swal.fire({
-        title: "Success!",
-        text: "Dieta guardada correctamente",
-        icon: "success"
-      });
-      navigate("/myDiets");
+      })
+        .then(() => {
+          Swal.fire({
+            title: "Success!",
+            text: "Dieta guardada correctamente",
+            icon: "success"
+          });
+          navigate("/myDiets");
+        });
     } catch (error) {
       Swal.fire({
         title: 'Error!',
@@ -140,10 +133,10 @@ function AddDiet() {
     }
   };
 
-  const handleDayChange = (value) => {
-    setCurrentDayIndex(value);
-    setMealData([]);
-  };
+  const handleCalendarChange = (date) => {
+    setCurrentDay(date);
+    setMealData(mealWeekData[date.getDay()]);
+  }
 
   const handleSameForAllDaysToggle = () => {
     setSameForAllDays(!sameForAllDays);
@@ -163,13 +156,14 @@ function AddDiet() {
           value={dietName} 
           onChange={(e) => setDietName(e.target.value)} 
         />
-        <DropDown
-          options={dayOptions}
-          predeterminated={currentDayIndex}
-          onSelect={(selected) => handleDayChange(selected)}
-          boolDays={true}
-          daysStatus={dayFlags}
-        />
+        <div className="calendar-row-one-item">
+          <WeekCalendar
+            calendarDate={currentDay}
+            showDayNumber={false}
+            handleCalendarChange={handleCalendarChange}
+            dayFlags={dayFlags}
+          />
+        </div>
         <div className="buttons-diet-header">
           <button onClick={handleAddMeal}>Añadir Comida</button>
           <button onClick={handleSameForAllDaysToggle}>{sameForAllDays ? 'Diferente dieta cada día' : 'Misma dieta cada día'}</button>
