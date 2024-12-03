@@ -1,9 +1,12 @@
 # TODO List for Food Stock
 
 ## Features to Implement
-- [ ] Editar dieta.
+- [X] Editar dieta.
+- [ ] Editar comida.
 - [X] Añadir componente calendario y registro de comidas.
 - [ ] Añadir componente WeekCalendar a AddDiet.
+- [ ] Añadir opciones de eliminar dieta
+- [ ] Añadir opciones mover dieta en pantalla
 - [ ] Llamada api para tener valor nutricional
 
 - [ ] Add user authentication.
