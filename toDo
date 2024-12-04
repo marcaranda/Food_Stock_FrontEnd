@@ -6,8 +6,10 @@
 - [X] Añadir componente calendario y registro de comidas.
 - [X] Añadir componente WeekCalendar a AddDiet.
 - [X] Añadir opciones de eliminar dieta
-- [X] Añadir opciones mover dieta en pantalla
+- [ ] Añadir opciones mover dieta en pantalla
 - [ ] Llamada api para tener valor nutricional
+- [X] Cambiar pantalla de incio
+- [ ] Modificar dieta favorita al crear
 
 - [ ] Add user authentication.
 - [ ] Implement dark mode toggle.

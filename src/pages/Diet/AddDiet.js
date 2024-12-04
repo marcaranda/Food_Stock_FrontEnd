@@ -5,6 +5,7 @@ import { startOfWeek, add } from 'date-fns';
 import { es } from 'date-fns/locale';
 import DropDown from "../../components/DropDown";
 import WeekCalendar from "../../components/WeekCalendar";
+import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import axios from "axios";
 import "../../styles/AddDiet.css";
@@ -144,9 +145,9 @@ function AddDiet() {
 
   return (
     <div className="container">
-    <div className="header">
-      <button onClick={() => navigate("/")}>Inicio</button>
-    </div>
+      <div className="header">
+        <Navbar />
+      </div>
       <h1>Añadir Dieta</h1>
       
       <div className="diet-header">

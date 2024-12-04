@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar, faList } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { getUrl } from "../../data/Constants";
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import WeekCalendar from "../../components/WeekCalendar";
+import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import Calendar from 'react-calendar';
 import axios from "axios";
@@ -14,8 +14,8 @@ import "../../styles/DietDetails.css";
 import 'react-calendar/dist/Calendar.css';
 
 function DietDetails() {
-  const navigate = useNavigate();
   const url = getUrl();
+  const actualDate = new Date();
   const { dietName } = useParams();
   const [diet, setDiet] = useState([]);
   const [selectedDayMeals, setSelectedDayMeals] = useState([]);
@@ -24,7 +24,6 @@ function DietDetails() {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const [mealsConfirmed, setMealsConfirmed] = useState([]);
-  const actualDate = new Date();
 
   useEffect(() => {
     const fetchDiet = async () => {
@@ -37,22 +36,34 @@ function DietDetails() {
             const dietData = response.data.diet;
             setDiet(dietData.days);
             setTotalFood(dietData.totalFood);
-          });
-
-        await axios.get(`${url}meal`)
-          .then((response) => {
-            setMealsConfirmed(response.data.meals);
-          });
-        
+          });        
       } catch (error) {
         console.error('Error fetching diet:', error);
       }
     };
 
     fetchDiet();
-    setSelectedDayMeals(getDayMeals(new Date()));
+    getDayMeals(new Date());
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    const getConfirmedMeals = async () => {
+      try {
+        const dateFormatted = format(calendarDate, 'yyyy-MM-dd');
+
+        await axios.get(`${url}meal/${dateFormatted}`)
+          .then((response) => {
+            setMealsConfirmed(response.data.meal.meals);
+          });
+      } catch (error) {
+        console.error('Error fetching meals:', error);
+      }
+    };
+
+    getConfirmedMeals();
+    // eslint-disable-next-line
+  }, [calendarDate]);
 
   useEffect(() => {
     getDayMeals(calendarDate);
@@ -77,23 +88,17 @@ function DietDetails() {
           ))
         ));
 
+        const confirmedMeal = {
+          [mealKey]: meal
+        }
+
         axios.put(`${url}meal`, {
           date: format(calendarDate, 'yyyy-MM-dd'),
-          meal: mealKey,
+          meal: confirmedMeal,
         });
 
         const newMealsConfirmed = [...mealsConfirmed];
-        const mealIndex = newMealsConfirmed.findIndex(meal => meal.date === format(calendarDate, 'yyyy-MM-dd'));
-        
-        if (mealIndex !== -1) {
-          newMealsConfirmed[mealIndex].meals.push(mealKey);
-        } else {
-          newMealsConfirmed.push({
-            date: format(calendarDate, 'yyyy-MM-dd'),
-            meals: [mealKey],
-          });
-        }
-
+        newMealsConfirmed.push({meal: confirmedMeal});
         setMealsConfirmed(newMealsConfirmed);
 
         Swal.fire({
@@ -144,14 +149,13 @@ function DietDetails() {
   }
 
   function isMealConfirmed(mealKey) {
-    return mealsConfirmed.some(meal => meal.date === format(calendarDate, 'yyyy-MM-dd') && meal.meals.includes(mealKey));
+    return mealsConfirmed.some(meal => meal.meal.hasOwnProperty(mealKey));
   }
 
   return (
     <div className="container">
       <div className="header">
-        <button onClick={() => navigate("/")}>Inicio</button>
-        <button onClick={() => navigate("/myDiets")}>Volver</button>
+        <Navbar />
       </div>
 
       <h1>{dietName}</h1>

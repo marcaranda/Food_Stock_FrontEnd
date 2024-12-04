@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUrl } from "../../data/Constants";
-import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import SortableItem from "../../components/SortableItem";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faListDots } from "@fortawesome/free-solid-svg-icons";
+import { Menu, MenuItem } from "@mui/material";
 import Swal from 'sweetalert2';
 import axios from "axios";
+import Navbar from "../../components/Navbar";
 import "../../styles/MyDiets.css";
 
 function MyDiets() {
@@ -74,62 +75,32 @@ function MyDiets() {
     }
   }
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-
-    if (active.id !== over.id) {
-      setDiets((prev) => {
-        const oldIndex = prev.findIndex((diet) => diet.name === active.id);
-        const newIndex = prev.findIndex((diet) => diet.name === over.id);
-
-        console.log(newIndex);
-
-        try {
-          axios.put(`${url}diet/changeOrder?dietName=${active.id}&newOrder=${newIndex + 1}`,)
-
-          const updated = [...prev];
-            const [moved] = updated.splice(oldIndex, 1);
-            updated.splice(newIndex, 0, moved);
-
-            return updated;
-        } catch (error) {
-          Swal.fire({
-            title: 'Error!',
-            text: 'Error al reordenar las dietas',
-            icon: 'error',
-            confirmButtonText: 'Cool'
-          });
-        }
-
-      });
-    }
-  };
-
   return (
     <div className="container">
       <div className="header">
-      <button onClick={() => navigate("/")}>Inicio</button>
-      <button onClick={() => navigate("/addDiet")}>Añadir Dieta</button>
+        <Navbar />
       </div>
       <h1>Mis Dietas</h1>
-      <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-        <SortableContext items={diets.map((diet) => diet.name)} strategy={verticalListSortingStrategy}>
           <ul className="diet-list">
             {diets.map((diet, index) => (
-              <SortableItem
-              key={diet.name}
-              diet={diet}
-              index={index}
-              navigate={navigate}
-              handleShowOptionsDiet={handleShowOptionsDiet}
-              handleCloseOptionsDiet={handleCloseOptionsDiet}
-              anchorEl={anchorEl}
-              setAnchorEl={setAnchorEl}
-            />
+              <li className="diet-item" key={index}>
+                <button onClick={() => navigate(`/myDiets/${diet.name}`)}>{diet.name}</button>
+                <button onClick={handleShowOptionsDiet}
+                >
+                  <FontAwesomeIcon icon={faListDots} />
+                </button>
+                <Menu
+                  id="simple-menu"
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={() => setAnchorEl(null)}
+                >
+                  <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Editar</MenuItem>
+                  <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Eliminar</MenuItem>
+                </Menu>
+              </li>
             ))}
           </ul>
-        </SortableContext>
-      </DndContext>
     </div>
   );
 }

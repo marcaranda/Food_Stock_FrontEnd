@@ -34,8 +34,19 @@ function WeekCalendar({calendarDate, showDayNumber, handleCalendarChange, dayFla
         <div className="week-container">
           {days.map((day, index) => (
             <button
-              className={isSameDay(day, calendarDate) ? 'selected' : (index + 1 === 7 ? (dayFlags[0] ? 'day-saved' : 'non-selected') :
-                (dayFlags[index + 1] ? 'day-saved' : 'non-selected'))}
+              className={dayFlags !== undefined ? 
+                          (isSameDay(day, calendarDate) ? 
+                            'selected' : 
+                            (index + 1 === 7 ? 
+                              (dayFlags[0] ? 
+                                'day-saved' : 
+                                'non-selected') :
+                              (dayFlags[index + 1] ? 
+                                'day-saved' : 
+                                'non-selected'))) :
+                          (isSameDay(day, calendarDate) ?
+                            'selected' : 
+                            'non-selected')}
               key={index}
               onClick={() => handleCalendarChange(day)}
             >

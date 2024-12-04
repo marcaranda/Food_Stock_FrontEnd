@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { getUrl } from "../../data/Constants";
 import DropDown from "../../components/DropDown";
+import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import axios from "axios";
 import "../../styles/NewShopping.css";
 
 function NewShopping() {
-  const navigate = useNavigate();
   const url = getUrl();
   const [diets, setDiets] = useState([]);
   const [dietNames, setDietNames] = useState([]);
@@ -137,8 +136,7 @@ function NewShopping() {
   return (
     <div className="container">
       <div className="header">
-      <button onClick={() => navigate("/")}>Inicio</button>
-      <button onClick={() => navigate("/myStock")}>Stock</button>
+        <Navbar />
       </div>
       <h1>Nueva Compra</h1>
 
