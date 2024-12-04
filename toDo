@@ -1,15 +1,20 @@
 # TODO List for Food Stock
 
 ## Features to Implement
-- [ ] Editar dieta.
-- [ ] Editar comida.
-- [X] Añadir componente calendario y registro de comidas.
-- [X] Añadir componente WeekCalendar a AddDiet.
-- [X] Añadir opciones de eliminar dieta
-- [ ] Añadir opciones mover dieta en pantalla
-- [ ] Llamada api para tener valor nutricional
-- [X] Cambiar pantalla de incio
-- [X] Modificar dieta favorita al crear
+  ### Frontend
+  - [ ] Editar dieta.
+  - [ ] Editar comida.
+  - [ ] Añadir opciones mover dieta en pantalla
+  - [ ] Imprimir macros de los alimentos en stock
+  - [X] Cambiar pantalla de incio
+  - [X] Modificar dieta favorita al crear
+  - [X] Añadir componente calendario y registro de comidas.
+  - [X] Añadir componente WeekCalendar a AddDiet.
+  - [X] Añadir opciones de eliminar dieta
+
+### Backend
+  - [ ] Llamada api para tener valor nutricional de una dieta
+  - [X] Llamada api para tener valor nutricional de un alimento
 
 - [ ] Add user authentication.
 - [ ] Implement dark mode toggle.
