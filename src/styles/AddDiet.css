@@ -85,6 +85,14 @@
   margin-top: 10px;
 }
 
+.calendar-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
 .calendar-row-one-item {
   display: flex;
   flex-direction: row;

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { getUrl } from "../../data/Constants";
 import { startOfWeek, add } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -19,6 +21,7 @@ function AddDiet() {
   const [currentDay, setCurrentDay] = useState(startOfWeek(new Date(), { locale: es }))
   const [dayFlags, setDayFlags] = useState(Array.from({ length: 7 }, () => false));
   const [sameForAllDays, setSameForAllDays] = useState(false);
+  const [favorite, setFavorite] = useState(false);
 
   const handleAddMeal = () => {
     const newMeal = { ingredients: [] };
@@ -46,6 +49,10 @@ function AddDiet() {
     const newMealData = [...mealData];
     newMealData[mealIndex].ingredients[ingredientIndex][field] = value;
     setMealData(newMealData);
+  };
+
+  const handleFavoriteClick = () => {
+    setFavorite(prevFavorite => !prevFavorite);
   };
 
   const handleSaveButton = () => {
@@ -105,6 +112,7 @@ function AddDiet() {
               name: ingredient.food,
               quantity: parseInt(ingredient.quantity, 10),
               unit: ingredient.unit,
+              favorite: favorite,
             };
           });
 
@@ -151,12 +159,17 @@ function AddDiet() {
       <h1>Añadir Dieta</h1>
       
       <div className="diet-header">
-        <input
-          type="text" 
-          placeholder="Nombre de la dieta" 
-          value={dietName} 
-          onChange={(e) => setDietName(e.target.value)} 
-        />
+        <div className="calendar-row">
+          <input
+            type="text" 
+            placeholder="Nombre de la dieta" 
+            value={dietName} 
+            onChange={(e) => setDietName(e.target.value)} 
+          />
+          <button onClick={handleFavoriteClick}>
+            <FontAwesomeIcon icon={faStar} color={favorite ? "gold" : "white"} />
+          </button>
+        </div>
         <div className="calendar-row-one-item">
           <WeekCalendar
             calendarDate={currentDay}
