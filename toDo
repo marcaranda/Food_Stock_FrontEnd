@@ -2,7 +2,6 @@
 
 ## Features to Implement
   ### Frontend
-  - [ ] Imprimir macros de los alimentos en stock
   - [ ] Editar dieta.
   - [ ] Editar comida.
   - [ ] Añadir opciones mover dieta en pantalla
@@ -11,6 +10,7 @@
   - [X] Añadir componente calendario y registro de comidas.
   - [X] Añadir componente WeekCalendar a AddDiet.
   - [X] Añadir opciones de eliminar dieta
+  - [X] Imprimir macros de los alimentos en stock
 
 ### Backend
   - [ ] Llamada api para tener valor nutricional de una dieta
