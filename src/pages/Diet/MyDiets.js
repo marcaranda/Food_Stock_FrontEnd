@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUrl } from "../../data/Constants";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faListDots } from "@fortawesome/free-solid-svg-icons";
+import { faListDots, faArrowDown, faArrowUp, faClose } from "@fortawesome/free-solid-svg-icons";
 import { Menu, MenuItem } from "@mui/material";
 import Swal from 'sweetalert2';
 import axios from "axios";
@@ -15,6 +15,7 @@ function MyDiets() {
   const [diets, setDiets] = useState([]);
   const [dietNames, setDietNames] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [reorder, setReorder] = useState(false);
 
   useEffect(() => {
     const fetchDietNames = async () => {
@@ -70,8 +71,55 @@ function MyDiets() {
           });
         }
         break;
+      case "Reordenar":
+        setReorder(prevReorder => !prevReorder);
+        break;
       default:
         break;
+    }
+  };
+
+  const handleCloseReorder = () => {
+    setReorder(false);
+  }
+
+  const handleReorder = (dietname, index, direction) => {
+    let newOrder = index + 1;
+
+    switch (direction) {
+      case "up":
+        newOrder -= 1;
+        break;
+      case "down":
+        newOrder += 1;
+        break;
+      default:
+        break
+    }
+
+    if (newOrder < 0 || newOrder >= diets.length) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'El nuevo índice está fuera de límites',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
+      return;
+    }
+
+    try {
+      const encodedDietName = encodeURIComponent(dietname);
+      axios.put(`${url}diet/changeOrder/${encodedDietName}/${newOrder}`)
+        .then(() => {
+          const updatedDiets = [...diets];
+          const dietIndex = updatedDiets.findIndex(diet => diet.name === dietname);
+          const diet = updatedDiets[dietIndex];
+          updatedDiets.splice(dietIndex, 1);
+          updatedDiets.splice(newOrder, 0, diet);
+          setDiets(updatedDiets);
+        });
+    } catch (error) {
+      console.error("Error al reordenar la dieta:", error);
     }
   }
 
@@ -85,10 +133,23 @@ function MyDiets() {
             {diets.map((diet, index) => (
               <li className="diet-item" key={index}>
                 <button onClick={() => navigate(`/myDiets/${diet.name}`)}>{diet.name}</button>
-                <button onClick={handleShowOptionsDiet}
-                >
-                  <FontAwesomeIcon icon={faListDots} />
-                </button>
+                {reorder ? ( 
+                  <div>
+                    <button onClick={() => handleReorder(diet.name, index, "up")}>
+                      <FontAwesomeIcon icon={faArrowUp} />
+                    </button>
+                    <button onClick={() => handleReorder(diet.name, index, "down")}>
+                    <FontAwesomeIcon icon={faArrowDown} />
+                    </button>
+                    <button onClick={handleCloseReorder}>
+                    <FontAwesomeIcon icon={faClose} />
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={handleShowOptionsDiet}>
+                    <FontAwesomeIcon icon={faListDots} />
+                  </button>
+                )}
                 <Menu
                   id="simple-menu"
                   anchorEl={anchorEl}
@@ -97,6 +158,7 @@ function MyDiets() {
                 >
                   <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Editar</MenuItem>
                   <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Eliminar</MenuItem>
+                  <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Reordenar</MenuItem>
                 </Menu>
               </li>
             ))}

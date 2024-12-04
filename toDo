@@ -4,7 +4,7 @@
   ### Frontend
   - [ ] Editar dieta.
   - [ ] Editar comida.
-  - [ ] Añadir opciones mover dieta en pantalla
+  - [-] Añadir opciones mover dieta en pantalla
   - [X] Cambiar pantalla de incio
   - [X] Modificar dieta favorita al crear
   - [X] Añadir componente calendario y registro de comidas.
