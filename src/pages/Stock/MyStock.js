@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { getUrl } from "../../data/Constants";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfo } from "@fortawesome/free-solid-svg-icons";
+import Popover from '@mui/material/Popover';
 import DropDown from "../../components/DropDown";
 import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
@@ -13,8 +16,8 @@ function MyStock() {
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState("g");
   const [booleanAddMeal, setBooleanAddMeal] = useState(false);
-
   const [stock, setStock] = useState([]);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     const fetchStock = async () => {
@@ -141,6 +144,10 @@ function MyStock() {
     }
   }
 
+  const handleShowMacros = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
   return (
     <div className="container">
       <div className="header">
@@ -184,14 +191,30 @@ function MyStock() {
             {stock.map((food, i) => (
               <li className="stock-item" key={food.name}>
                 <div className="stock-item-quantity">
-                  <label htmlFor={`food-${food.name}`}>{food.name}: </label>
-                    <input
-                      id={`food-${food.name}`}
-                      type="number"
-                      value={food.quantity}
-                      onChange={(e) => handleInputUpdateChange(i, e.target.value)}
-                    />
-                    <span>{food.unit}</span>
+                  <label className="heigth-center">{food.name}: </label>
+                  <button onClick={handleShowMacros} className="info">
+                    <FontAwesomeIcon icon={faInfo} />
+                  </button>
+                  <Popover
+                    id="popover-basic"
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={() => setAnchorEl(null)}>
+                      <div className="popover-container">
+                        <h2>Macronutrientes cada 100g</h2>
+                        <p>Calorías: {food.macros.calories}</p>
+                        <p>Carbohidratos: {food.macros.carbs}</p>
+                        <p>Grasas: {food.macros.fat}</p>
+                        <p>Proteínas: {food.macros.protein}</p>
+                      </div>
+                  </Popover>
+                  <input
+                    id={`food-${food.name}`}
+                    type="number"
+                    value={food.quantity}
+                    onChange={(e) => handleInputUpdateChange(i, e.target.value)}
+                  />
+                  <span className="heigth-center">{food.unit}</span>
                 </div>
                 <button className="update" onClick={() => handleSaveUpdateButton(i)}>Actualizar</button>
                 <button className="delete" onClick={() => handleDeleteButton(i)}>Eliminar</button>

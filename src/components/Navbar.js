@@ -17,8 +17,7 @@ function Navbar() {
       <AppBar position="static">
         <Toolbar>
           <Box sx={{ flexGrow: 1 }}>
-            <Button color="inherit" onClick={handleShowOptionsDiet}
-            >
+            <Button color="inherit" onClick={handleShowOptionsDiet}>
               <FontAwesomeIcon icon={faListDots} />
             </Button>
             <Menu
