@@ -29,6 +29,7 @@ function Navbar() {
               <MenuItem onClick={() => navigate("/myStock")}>Mi Stock</MenuItem>
               <MenuItem onClick={() => navigate("/myDiets")}>Mis Dietas</MenuItem>
               <MenuItem onClick={() => navigate("/addDiet")}>Añadir Dieta</MenuItem>
+              <MenuItem onClick={() => navigate("/addTraining")}>Añadir Entreno</MenuItem>
               <MenuItem onClick={() => navigate("/newShopping")}>Nueva Compra</MenuItem>
             </Menu>
             <Button color="inherit" onClick={() => navigate("/")}>Inicio</Button>

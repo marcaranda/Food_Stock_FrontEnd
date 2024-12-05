@@ -7,6 +7,7 @@ import DietDetails from "./pages/Diet/DietDetails"
 import AddDiet from "./pages/Diet/AddDiet"
 import MyStock from './pages/Stock/MyStock';
 import NewShopping from './pages/Shopping/NewShopping';
+import AddTraining from './pages/Training/AddTraining';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/myDiets/:dietName" element={<DietDetails/>} />
       <Route path="/addDiet" element={<AddDiet/>} />
       <Route path="/myStock" element={<MyStock/>} />
+      <Route path="/addTraining" element={<AddTraining/>} />
       <Route path="/newShopping" element={<NewShopping/>} />
     </Routes>
   </BrowserRouter>
