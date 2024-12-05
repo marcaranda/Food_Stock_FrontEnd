@@ -5,10 +5,9 @@ import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { getUrl } from "../../data/Constants";
 import { startOfWeek, add } from 'date-fns';
 import { es } from 'date-fns/locale';
+import DropDown from "../../components/DropDown";
 import WeekCalendar from "../../components/WeekCalendar";
 import Navbar from "../../components/Navbar";
-import Rating from '@mui/material/Rating';
-import Typography from '@mui/material/Typography';
 import Swal from 'sweetalert2';
 import axios from "axios";
 import "../../styles/AddTraining.css";
@@ -111,28 +110,26 @@ function AddTraining() {
               type="text"
               placeholder="Nombre del ejercicio"
               value={exercise.name}
-              onChange={(e) => handleInputChange(i, 0, 'name', e.target.value)}
+              onChange={(e) => handleInputChange(i, 'name', e.target.value)}
             />
-            <input
-              type="text"
-              placeholder="Categoria"
-              value={exercise.category}
-              onChange={(e) => handleInputChange(i, 0, 'category', e.target.value)}
+            <DropDown
+              options={[
+                { value: 'Gym', label: 'Gym' },
+                { value: 'Fútbol', label: 'Fútbol' },
+                { value: 'Correr', label: 'Correr' },
+                { value: 'Ciclismo', label: 'Ciclismo' },
+                { value: 'Natación', label: 'Natación' },
+              ]}
+              predeterminated={{ value: exercise.type, label: exercise.type }}
+              onSelect={(selected) => handleInputChange(i, "type", selected.value)} 
+              boolDays={false}
             />
             <input
               type="text"
               placeholder="Información"
               value={exercise.description}
-              onChange={(e) => handleInputChange(i, 0, 'information', e.target.value)}
+              onChange={(e) => handleInputChange(i, 'information', e.target.value)}
             />
-            <div className="exercise-intensity">
-              <Typography component="legend">Zona de entrenamiento:</Typography>
-              <Rating
-                name="intensity"
-                value={exercise.intensity}
-                onChange={(e) => handleInputChange(i, 0, 'intensity', e.target.value)}
-              />
-            </div>
             <div className="buttons-exercise">
               <button onClick={() => handleDeleteExercise(i)}>Eliminar Ejercicio</button>
             </div>
