@@ -24,7 +24,7 @@ function AddTraining() {
   const [favorite, setFavorite] = useState(false);
 
   const handleAddExercise = () => {
-    const newExercise = { sets: [] };
+    const newExercise = [];
     setExerciseData([...exerciseData, newExercise]);
   };
 
@@ -33,14 +33,43 @@ function AddTraining() {
     setExerciseData(newExerciseData);
   };
 
-  const handleInputChange = (exerciseIndex, setIndex, field, value) => {
+  const handleInputChange = (exerciseIndex, field, value) => {
     const newExerciseData = [...exerciseData];
-    newExerciseData[exerciseIndex].sets[setIndex][field] = value;
+    newExerciseData[exerciseIndex][field] = value;
     setExerciseData(newExerciseData);
   };
 
   const handleFavoriteClick = () => {
     setFavorite(prevFavorite => !prevFavorite);
+  };
+
+  const handleSaveButton = () => {
+    if (sameForAllDays) {
+      setExerciseWeekData(Array.from({ length: 7 }, () => exerciseData));
+      setDayFlags(Array.from({ length: 7 }, () => true));
+    } else if (dayFlags.some((flag) => flag === false)){
+      setDayFlags(prevFlags => {
+        const updatedFlags = [...prevFlags];
+        updatedFlags[currentDay.getDay()] = true;
+        return updatedFlags;
+      });
+
+      setExerciseWeekData(prev => {
+        const updatedMealWeekData = [...prev];
+        updatedMealWeekData[currentDay.getDay()] = exerciseData;
+        return updatedMealWeekData;
+      });
+
+      const nextDay = add(currentDay, { days: 1 });
+      setCurrentDay(nextDay);
+      setExerciseData(exerciseWeekData[nextDay.getDay()]);
+
+      Swal.fire({
+        title: "Success!",
+        text: "Día guardado correctamente",
+        icon: "success"
+      });
+    }
   };
 
   useEffect(() => {
@@ -53,9 +82,45 @@ function AddTraining() {
 
   const saveToDatabase = async () => {
     try {
+      const dayNames = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+      const transformedDays = {};
 
+      exerciseWeekData.forEach((dayTraining, dayIndex) => {
+        const dayName = dayNames[dayIndex];
+        transformedDays[dayName] = {};
+
+        dayTraining.forEach((exercise, exerciseIndex) => {
+          const exerciseName = `entreno${exerciseIndex + 1}`;
+          
+          transformedDays[dayName][exerciseName] = {
+            name: exercise.name,
+            type: exercise.type,
+            information: exercise.information,
+          };
+        });
+      });
+      
+      axios.post(`${url}training`, {
+        name: trainingName,
+        days: transformedDays,
+        favorite: favorite,
+      })
+        .then(() => {
+          Swal.fire({
+            title: "Success!",
+            text: "Dieta guardada correctamente",
+            icon: "success"
+          });
+          navigate("/");
+          //navigate("/myTrainings");
+        });
     } catch (error) {
-
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error al guardar la dieta',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
     }
   };
 
@@ -98,17 +163,17 @@ function AddTraining() {
         </div>
         <div className="buttons-training-header">
           <button onClick={handleAddExercise}>Añadir Entreno</button>
-          <button onClick={handleSameForAllDaysToggle}>{sameForAllDays ? 'Diferente entreno cada día' : 'Misma entreno cada día'}</button>
+          <button onClick={handleSameForAllDaysToggle}>{sameForAllDays ? 'Diferente entreno cada día' : 'Mismo entreno cada día'}</button>
         </div>
       </div>
 
       {exerciseData.map((exercise, i) => (
         <div key={`exercise-${i}`} className="exercise-container">
           <div className="exercise">
-            <label>Ejercicio {i + 1}:</label>
+            <label>Entreno {i + 1}:</label>
             <input
               type="text"
-              placeholder="Nombre del ejercicio"
+              placeholder="Nombre del entreno"
               value={exercise.name}
               onChange={(e) => handleInputChange(i, 'name', e.target.value)}
             />
@@ -127,7 +192,7 @@ function AddTraining() {
             <input
               type="text"
               placeholder="Información"
-              value={exercise.description}
+              value={exercise.information}
               onChange={(e) => handleInputChange(i, 'information', e.target.value)}
             />
             <div className="buttons-exercise">
@@ -136,6 +201,7 @@ function AddTraining() {
           </div>
         </div>
       ))}
+      <button onClick={handleSaveButton}>Guardar</button>
     </div>
   );
 }

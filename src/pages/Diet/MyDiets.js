@@ -129,40 +129,40 @@ function MyDiets() {
         <Navbar />
       </div>
       <h1>Mis Dietas</h1>
-          <ul className="diet-list">
-            {diets.map((diet, index) => (
-              <li className="diet-item" key={index}>
-                <button onClick={() => navigate(`/myDiets/${diet.name}`)}>{diet.name}</button>
-                {reorder ? ( 
-                  <div>
-                    <button onClick={() => handleReorder(diet.name, index, "up")}>
-                      <FontAwesomeIcon icon={faArrowUp} />
-                    </button>
-                    <button onClick={() => handleReorder(diet.name, index, "down")}>
-                    <FontAwesomeIcon icon={faArrowDown} />
-                    </button>
-                    <button onClick={handleCloseReorder}>
-                    <FontAwesomeIcon icon={faClose} />
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={handleShowOptionsDiet}>
-                    <FontAwesomeIcon icon={faListDots} />
-                  </button>
-                )}
-                <Menu
-                  id="simple-menu"
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={() => setAnchorEl(null)}
-                >
-                  <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Editar</MenuItem>
-                  <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Eliminar</MenuItem>
-                  <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Reordenar</MenuItem>
-                </Menu>
-              </li>
-            ))}
-          </ul>
+      <ul className="diet-list">
+        {diets.map((diet, index) => (
+          <li className="diet-item" key={index}>
+            <button onClick={() => navigate(`/myDiets/${diet.name}`)}>{diet.name}</button>
+            {reorder ? ( 
+              <div>
+                <button onClick={() => handleReorder(diet.name, index, "up")}>
+                  <FontAwesomeIcon icon={faArrowUp} />
+                </button>
+                <button onClick={() => handleReorder(diet.name, index, "down")}>
+                <FontAwesomeIcon icon={faArrowDown} />
+                </button>
+                <button onClick={handleCloseReorder}>
+                <FontAwesomeIcon icon={faClose} />
+                </button>
+              </div>
+            ) : (
+              <button onClick={handleShowOptionsDiet}>
+                <FontAwesomeIcon icon={faListDots} />
+              </button>
+            )}
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+            >
+              <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Editar</MenuItem>
+              <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Eliminar</MenuItem>
+              <MenuItem onClick={(event) => handleCloseOptionsDiet(event, diet.name)}>Reordenar</MenuItem>
+            </Menu>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

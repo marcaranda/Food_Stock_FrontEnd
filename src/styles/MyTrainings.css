@@ -1,10 +1,10 @@
-.diet-list {
+.training-list {
   width: 100%;
   list-style-type: none;
   padding: 0;
 }
 
-.diet-item {
+.training-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -12,10 +12,10 @@
   border-bottom: 1px solid #ccc;
 }
 
-.diet-item button {
+.training-item button {
   background-color: #1d99a1;
 }
 
-.diet-item button:hover {
+.training-item button:hover {
   background-color: #0d5358;
 }

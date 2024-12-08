@@ -112,7 +112,6 @@ function AddDiet() {
               name: ingredient.food,
               quantity: parseInt(ingredient.quantity, 10),
               unit: ingredient.unit,
-              favorite: favorite,
             };
           });
 
@@ -123,6 +122,7 @@ function AddDiet() {
       axios.post(`${url}diet`, {
         name: dietName,
         days: transformedDays,
+        favorite: favorite,
       })
         .then(() => {
           Swal.fire({
