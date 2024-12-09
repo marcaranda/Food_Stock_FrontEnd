@@ -13,7 +13,6 @@
   - [X] Imprimir macros de los alimentos en stock
 
 ### Backend
-  - [ ] Añadir lista de fechas confirmadas dentro de la comida en lugar de guardarlo en una tabla nueva
   - [ ] Si no hay dieta o entreno favorito, asignarlo
   - [ ] Llamada api para tener valor nutricional de una dieta
   - [X] Llamada api para tener valor nutricional de un alimento

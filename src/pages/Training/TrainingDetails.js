@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar, faList } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from 'react-router-dom';
 import { getUrl } from "../../data/Constants";
-import { format, getDay, isSameDay, set } from 'date-fns';
-import { de, es } from 'date-fns/locale';
+import { format, isBefore, isSameDay } from 'date-fns';
+import { es } from 'date-fns/locale';
 import WeekCalendar from "../../components/WeekCalendar";
 import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
@@ -45,6 +45,24 @@ function TrainingDetails() {
   }, []);
 
   useEffect(() => {
+    const getConfirmedExercises = async () => {
+      try {
+        const dateFormatted = format(calendarDate, 'yyyy-MM-dd');
+
+        await axios.get(`${url}confirmedExercise/${dateFormatted}`)
+          .then((response) => {
+            setExercisesConfirmed(response.data.confirmedExercise.exercises);
+          });
+      } catch (error) {
+        console.error('Error fetching exercises:', error);
+      }
+    };
+
+    getConfirmedExercises();
+    // eslint-disable-next-line
+  }, [calendarDate]);
+
+  useEffect(() => {
     getDayExercises(calendarDate);
     // eslint-disable-next-line
   }, [training]);
@@ -69,8 +87,43 @@ function TrainingDetails() {
     setSelectedDayExercises(training[dayKey]);
   }
 
-  const handleConfirmTraining = (meal, mealKey) => {
-    console.log("Confirmar entrenamiento");
+  const handleConfirmTraining = (exercise, exerciseKey) => {
+    if (isSameDay(calendarDate, actualDate) || isBefore(calendarDate, actualDate)) {
+      try {
+        const confirmedExercise = {
+          [exerciseKey]: exercise
+        }
+
+        axios.put(`${url}confirmedExercise`, {
+          date: format(calendarDate, 'yyyy-MM-dd'),
+          exercise: confirmedExercise,
+        })
+          .then(() => {
+            const newExercisesConfirmed = [...exercisesConfirmed];
+            newExercisesConfirmed.push({exercise: confirmedExercise});
+            setExercisesConfirmed(newExercisesConfirmed);
+
+            Swal.fire({
+              title: "Success!",
+              text: "Ejercicio confirmado correctamente",
+              icon: "success"
+            });
+          });
+      } catch (error) {
+        console.error('Error fetching meals:', error);
+      }
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: 'No puedes confirmar una entreno del futuro',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
+    }
+  }
+
+  function isExerciseConfirmed(exerciseKey) {
+    return exercisesConfirmed.some(exercise => exercise.exercise.hasOwnProperty(exerciseKey));
   }
 
   return (
@@ -111,19 +164,28 @@ function TrainingDetails() {
 
       <h2>Entrenos del {format(calendarDate, 'EEEE', {locale : es}).charAt(0).toUpperCase() + format(calendarDate, 'EEEE', {locale : es}).slice(1)}:</h2>
       {selectedDayExercises ? (
-        <ul className="training-list">
-          {Object.keys(selectedDayExercises).map((exercise, index) => (
-            <li className="training-item" key={index}> 
-              <div className="training-header">
-                <h3>Entreno {index + 1}:</h3>
-                <div className="training-buttons">
-                  <button onClick={() => handleConfirmTraining(exercise)}>Confirmar</button>
-                  <button onClick={() => handleConfirmTraining(exercise)}>Editar</button>
+        <ul className="exercise-list">
+          {Object.keys(selectedDayExercises).map((exerciseKey, index) => {
+            const exercise = selectedDayExercises[exerciseKey]; // Obtén el objeto correspondiente al ejercicio
+            return (
+              <li className={`exercise-item ${isExerciseConfirmed(exerciseKey) ? "confirmed" : ""}`} key={index}>
+                <div className="exercise-header">
+                  <h3>Entreno {index + 1}:</h3>
+                  {!isExerciseConfirmed(exerciseKey) &&
+                    <div className="exercise-buttons">
+                      <button onClick={() => handleConfirmTraining(exercise, exerciseKey)}>Confirmar</button>
+                      <button onClick={() => handleConfirmTraining(exercise)}>Editar</button>
+                    </div>
+                  }
                 </div>
-              </div>
-              <label>exercise.name</label>
-            </li>
-          ))}
+                <div className="exercise-body">
+                  <label>{exercise.name}</label>
+                  <label>{exercise.type}</label>
+                  <label>{exercise.information}</label>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <p>No hay entrenos para este día</p>

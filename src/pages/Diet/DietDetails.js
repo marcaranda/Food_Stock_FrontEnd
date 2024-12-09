@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar, faList } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from 'react-router-dom';
 import { getUrl } from "../../data/Constants";
-import { format, isSameDay } from 'date-fns';
+import { format, isBefore, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import WeekCalendar from "../../components/WeekCalendar";
 import Navbar from "../../components/Navbar";
@@ -71,7 +71,7 @@ function DietDetails() {
   }, [diet]);
 
   const handleConfirmMeal = (meal, mealKey) => {
-    if (isSameDay(actualDate, calendarDate)) {
+    if (isSameDay(calendarDate, actualDate) || isBefore(calendarDate, actualDate)) {
       try {
         meal.map((ingredientObject) => (
           Object.entries(ingredientObject).map(([ingredientKey, ingredient]) => (
@@ -117,7 +117,7 @@ function DietDetails() {
     } else {
       Swal.fire({
         title: 'Error!',
-        text: 'No puedes confirmar una comida que no es de hoy',
+        text: 'No puedes confirmar una comida del futuro',
         icon: 'error',
         confirmButtonText: 'Cool'
       });

@@ -64,13 +64,13 @@
   color: #000000 !important;
 }
 
-.training-list {
+.exercise-list {
   width: 100%;
   list-style-type: none;
   padding: 0;
 }
 
-.training-item {
+.exercise-item {
   padding: 10px;
   border-bottom: 1px solid #ccc;
   flex-wrap: wrap;
@@ -80,7 +80,7 @@
   background-color: #73ce61;
 }
 
-.training-header {
+.exercise-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -88,9 +88,19 @@
   width: 100%;
 }
 
-.training-buttons {
+.exercise-buttons {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   width: 185px;
+}
+
+.exercise-body {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.exercise-body label {
+  margin-bottom: 10px;
 }
