@@ -3,8 +3,14 @@
 ## Features to Implement
   ### Frontend
   - [ ] Editar dieta.
+  - [ ] Editar comida al confirmar.
+  - [ ] Editar entreno.
+  - [ ] Editar ejercicio al confirmar.
   - [ ] Editar comida.
+  - [ ] Añadir nombre a tablas de confirmacion
+
   - [-] Añadir opciones mover dieta en pantalla
+
   - [X] Cambiar pantalla de incio
   - [X] Modificar dieta favorita al crear
   - [X] Añadir componente calendario y registro de comidas.
@@ -15,6 +21,8 @@
 ### Backend
   - [ ] Si no hay dieta o entreno favorito, asignarlo
   - [ ] Llamada api para tener valor nutricional de una dieta
+  - [ ] Integración con Strava para poder recopilar datos de un entreno
+
   - [X] Llamada api para tener valor nutricional de un alimento
 
 - [ ] Add user authentication.

@@ -111,8 +111,7 @@ function AddTraining() {
             text: "Dieta guardada correctamente",
             icon: "success"
           });
-          navigate("/");
-          //navigate("/myTrainings");
+          navigate("/myTrainings");
         });
     } catch (error) {
       Swal.fire({

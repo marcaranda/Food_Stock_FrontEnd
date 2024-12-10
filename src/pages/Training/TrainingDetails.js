@@ -6,6 +6,7 @@ import { getUrl } from "../../data/Constants";
 import { format, isBefore, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import WeekCalendar from "../../components/WeekCalendar";
+import ConfirmModal from "../../components/ConfirmModal";
 import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import Calendar from 'react-calendar';
@@ -21,7 +22,10 @@ function TrainingDetails() {
   const [selectedDayExercises, setSelectedDayExercises] = useState([]);
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [exercisesConfirmed, setExercisesConfirmed] = useState([]);
+
+  const [selectedExercise, setSelectedExercise] = useState(null);
 
   useEffect(() => {
     const fetchTraining = async () => {
@@ -74,6 +78,11 @@ function TrainingDetails() {
 
   const handleShowCalendarClick = () => {
     setShowCalendar(prevShowCalendar => !prevShowCalendar);
+  }
+
+  const handleShowConfirmModal = (exercise, exerciseKey) => {
+    setSelectedExercise({exercise : exercise, exerciseKey : exerciseKey});
+    setShowConfirmModal(true);
   }
 
   const handleCalendarChange = (date) => {
@@ -173,7 +182,7 @@ function TrainingDetails() {
                   <h3>Entreno {index + 1}:</h3>
                   {!isExerciseConfirmed(exerciseKey) &&
                     <div className="exercise-buttons">
-                      <button onClick={() => handleConfirmTraining(exercise, exerciseKey)}>Confirmar</button>
+                      <button onClick={() => handleShowConfirmModal(exercise, exerciseKey)}>Confirmar</button>
                       <button onClick={() => handleConfirmTraining(exercise)}>Editar</button>
                     </div>
                   }
@@ -190,6 +199,18 @@ function TrainingDetails() {
       ) : (
         <p>No hay entrenos para este día</p>
       )}
+      {showConfirmModal &&
+        <ConfirmModal
+          trainingName={trainingName}
+          exercise={selectedExercise.exercise}
+          exerciseKey={selectedExercise.exerciseKey}
+          exercisesConfirmed={exercisesConfirmed}
+          setExercisesConfirmed={setExercisesConfirmed}
+          calendarDate={calendarDate}
+          actualDate={actualDate}
+          setShowConfirmModal={setShowConfirmModal}
+        />
+      }
     </div>
   );
 };

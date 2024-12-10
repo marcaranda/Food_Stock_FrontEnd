@@ -26,7 +26,7 @@ function DropDown({onSelect, options, predeterminated, boolDays, daysStatus}) {
     }));
 
     return (
-        <div>
+        <div style={{ marginBottom: '10px', border: '1px solid #ddd' }}>
             <Select
             isSearchable={false}
             value={selected}
