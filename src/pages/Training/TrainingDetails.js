@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar, faList } from "@fortawesome/free-solid-svg-icons";
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { getUrl } from "../../data/Constants";
 import { format, isBefore, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -16,6 +16,7 @@ import 'react-calendar/dist/Calendar.css';
 
 function TrainingDetails() {
   const url = getUrl();
+  const location = useLocation();
   const actualDate = new Date();
   const { trainingName } = useParams();
   const [training, setTraining] = useState([]);
@@ -24,7 +25,7 @@ function TrainingDetails() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [exercisesConfirmed, setExercisesConfirmed] = useState([]);
-
+  const [stravaCode, setStravaCode] = useState('');
   const [selectedExercise, setSelectedExercise] = useState(null);
 
   useEffect(() => {
@@ -70,6 +71,48 @@ function TrainingDetails() {
     getDayExercises(calendarDate);
     // eslint-disable-next-line
   }, [training]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    if (code !== null) {
+      console.log(code);
+      setStravaCode(code);
+      setSelectedExercise(JSON.parse(localStorage.getItem('selectedExercise')));
+    }
+  }, [location]);
+
+  useEffect (() => {
+    if (stravaCode === null || stravaCode === '') return;
+    try {
+      console.log({
+        trainingName: trainingName,
+        date: format(calendarDate, 'yyyy-MM-dd'),
+        exercise: selectedExercise,
+      });
+
+      axios.put(`${url}confirmedExercise?code=${stravaCode}`, {
+        trainingName: trainingName,
+        date: format(calendarDate, 'yyyy-MM-dd'),
+        exercise: selectedExercise,
+      })
+        .then(() => {
+          const newExercisesConfirmed = [...exercisesConfirmed];
+          newExercisesConfirmed.push({exercise: selectedExercise});
+          setExercisesConfirmed(newExercisesConfirmed);
+
+          localStorage.removeItem('selectedExercise');
+
+          Swal.fire({
+            title: "Success!",
+            text: "Ejercicio confirmado correctamente",
+            icon: "success"
+          });
+        });
+    } catch (error) {
+      console.error('Error fetching meals:', error);
+    }
+  }, [stravaCode]);
 
   // eslint-disable-next-line
   const handleEditTraining = (training) => {
@@ -209,6 +252,8 @@ function TrainingDetails() {
           calendarDate={calendarDate}
           actualDate={actualDate}
           setShowConfirmModal={setShowConfirmModal}
+          setSelectedExercise={setSelectedExercise}
+          setStravaCode={setStravaCode}
         />
       }
     </div>

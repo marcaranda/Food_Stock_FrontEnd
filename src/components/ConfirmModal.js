@@ -1,41 +1,37 @@
 import React, { useState } from "react";
-import { getUrl } from "../data/Constants";
-import { format, isBefore, isSameDay } from 'date-fns';
+import { getUrl, getStravaUrl, getStravaUrl2 } from "../data/Constants";
+import { isBefore, isSameDay } from 'date-fns';
 import DropDown from "../components/DropDown";
 import Swal from 'sweetalert2';
-import axios from "axios";
 import "../styles/ConfirmModal.css";
 
-function ConfirmModal({trainingName, exercise, exerciseKey, exercisesConfirmed, setExercisesConfirmed, calendarDate, actualDate, setShowConfirmModal}) {
-  const url = getUrl();
-  const [confirmedExercise, setConfirmedExercise] = useState(exercise);
+function ConfirmModal({trainingName, exercise, exerciseKey, exercisesConfirmed, setExercisesConfirmed, calendarDate, actualDate, setShowConfirmModal, setSelectedExercise, setStravaCode}) {
+  const stravaUrl1 = getStravaUrl();
+  const stravaUrl2 = getStravaUrl2();
+  const [confirmedExercise, setConfirmedExercise] = useState({
+    name: exercise.name,
+    type: exercise.type,
+    information: exercise.information,
+    duration: '',
+    intensity: '3',
+    url: '',
+  });
 
-  const handleConfirmTraining = (exercise, exerciseKey) => {
-    if (isSameDay(calendarDate, actualDate) || isBefore(calendarDate, actualDate)) {
-      try {
-        const confirmedExercise = {
-          [exerciseKey]: exercise
-        }
-
-        axios.put(`${url}confirmedExercise`, {
-          trainingName: trainingName,
-          date: format(calendarDate, 'yyyy-MM-dd'),
-          exercise: confirmedExercise,
-        })
-          .then(() => {
-            const newExercisesConfirmed = [...exercisesConfirmed];
-            newExercisesConfirmed.push({exercise: confirmedExercise});
-            setExercisesConfirmed(newExercisesConfirmed);
-
-            Swal.fire({
-              title: "Success!",
-              text: "Ejercicio confirmado correctamente",
-              icon: "success"
-            });
-          });
-      } catch (error) {
-        console.error('Error fetching meals:', error);
+  const handleConfirmTraining = () => {
+    if (isSameDay(calendarDate, actualDate) || isBefore(calendarDate, actualDate)) { 
+      const exerciseDB = {
+        [exerciseKey]: confirmedExercise
       }
+      setSelectedExercise(exerciseDB);
+      localStorage.setItem('selectedExercise', JSON.stringify(exerciseDB));
+
+      if (confirmedExercise.url !== '' && confirmedExercise.url.includes("strava.com")) {
+        const stravaUrl = `${stravaUrl1}${trainingName}${stravaUrl2}`;
+        window.location.href = stravaUrl;
+      } else{
+        setStravaCode(".");
+      }
+      setShowConfirmModal(false);
     } else {
       Swal.fire({
         title: 'Error!',
@@ -100,7 +96,7 @@ function ConfirmModal({trainingName, exercise, exerciseKey, exercisesConfirmed, 
             type="text"
             placeholder="Url app externa"
             value={confirmedExercise.url}
-            onChange={(e) => handleInputChange('notes', e.target.value)}
+            onChange={(e) => handleInputChange('url', e.target.value)}
           />
           <label>Información extra</label>
           <input
