@@ -7,7 +7,7 @@ import { Menu, MenuItem } from "@mui/material";
 import Swal from 'sweetalert2';
 import axios from "axios";
 import Navbar from "../../components/Navbar";
-import "../../styles/MyDiets.css";
+import "../../styles/pages/MyDiets.css";
 
 function MyDiets() {
   const navigate = useNavigate();

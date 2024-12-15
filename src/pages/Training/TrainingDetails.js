@@ -6,12 +6,12 @@ import { getUrl } from "../../data/Constants";
 import { format, isBefore, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import WeekCalendar from "../../components/WeekCalendar";
-import ConfirmModal from "../../components/ConfirmModal";
+import ConfirmExercise from "../../components/ConfirmExercise";
 import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import Calendar from 'react-calendar';
 import axios from "axios";
-import "../../styles/TrainingDetails.css";
+import "../../styles/pages/TrainingDetails.css";
 import 'react-calendar/dist/Calendar.css';
 
 function TrainingDetails() {
@@ -23,7 +23,7 @@ function TrainingDetails() {
   const [selectedDayExercises, setSelectedDayExercises] = useState([]);
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showConfirmExercise, setShowConfirmExercise] = useState(false);
   const [exercisesConfirmed, setExercisesConfirmed] = useState([]);
   const [stravaCode, setStravaCode] = useState('');
   const [selectedExercise, setSelectedExercise] = useState(null);
@@ -112,6 +112,7 @@ function TrainingDetails() {
     } catch (error) {
       console.error('Error fetching meals:', error);
     }
+    // eslint-disable-next-line
   }, [stravaCode]);
 
   // eslint-disable-next-line
@@ -123,9 +124,9 @@ function TrainingDetails() {
     setShowCalendar(prevShowCalendar => !prevShowCalendar);
   }
 
-  const handleShowConfirmModal = (exercise, exerciseKey) => {
+  const handleShowConfirmExercise = (exercise, exerciseKey) => {
     setSelectedExercise({exercise : exercise, exerciseKey : exerciseKey});
-    setShowConfirmModal(true);
+    setShowConfirmExercise(true);
   }
 
   const handleCalendarChange = (date) => {
@@ -225,7 +226,7 @@ function TrainingDetails() {
                   <h3>Entreno {index + 1}:</h3>
                   {!isExerciseConfirmed(exerciseKey) &&
                     <div className="exercise-buttons">
-                      <button onClick={() => handleShowConfirmModal(exercise, exerciseKey)}>Confirmar</button>
+                      <button onClick={() => handleShowConfirmExercise(exercise, exerciseKey)}>Confirmar</button>
                       <button onClick={() => handleConfirmTraining(exercise)}>Editar</button>
                     </div>
                   }
@@ -242,8 +243,8 @@ function TrainingDetails() {
       ) : (
         <p>No hay entrenos para este día</p>
       )}
-      {showConfirmModal &&
-        <ConfirmModal
+      {showConfirmExercise &&
+        <ConfirmExercise
           trainingName={trainingName}
           exercise={selectedExercise.exercise}
           exerciseKey={selectedExercise.exerciseKey}
@@ -251,7 +252,7 @@ function TrainingDetails() {
           setExercisesConfirmed={setExercisesConfirmed}
           calendarDate={calendarDate}
           actualDate={actualDate}
-          setShowConfirmModal={setShowConfirmModal}
+          setShowConfirmExercise={setShowConfirmExercise}
           setSelectedExercise={setSelectedExercise}
           setStravaCode={setStravaCode}
         />

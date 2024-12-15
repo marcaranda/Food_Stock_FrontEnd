@@ -7,7 +7,7 @@ import DropDown from "../../components/DropDown";
 import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import axios from "axios";
-import "../../styles/MyStock.css";
+import "../../styles/pages/MyStock.css";
 
 function MyStock() {
   const url = getUrl();

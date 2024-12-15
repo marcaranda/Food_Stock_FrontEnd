@@ -4,7 +4,7 @@ import DropDown from "../../components/DropDown";
 import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import axios from "axios";
-import "../../styles/NewShopping.css";
+import "../../styles/pages/NewShopping.css";
 
 function NewShopping() {
   const url = getUrl();

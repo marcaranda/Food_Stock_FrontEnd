@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { getUrl, getStravaUrl, getStravaUrl2 } from "../data/Constants";
+import { getStravaUrl, getStravaUrl2 } from "../data/Constants";
 import { isBefore, isSameDay } from 'date-fns';
-import DropDown from "../components/DropDown";
+import DropDown from "./DropDown";
 import Swal from 'sweetalert2';
-import "../styles/ConfirmModal.css";
+import "../styles/components/ConfirmExercise.css";
 
-function ConfirmModal({trainingName, exercise, exerciseKey, exercisesConfirmed, setExercisesConfirmed, calendarDate, actualDate, setShowConfirmModal, setSelectedExercise, setStravaCode}) {
+function ConfirmExercise({trainingName, exercise, exerciseKey, exercisesConfirmed, setExercisesConfirmed, calendarDate, actualDate, setShowConfirmExercise, setSelectedExercise, setStravaCode}) {
   const stravaUrl1 = getStravaUrl();
   const stravaUrl2 = getStravaUrl2();
   const [confirmedExercise, setConfirmedExercise] = useState({
@@ -31,7 +31,7 @@ function ConfirmModal({trainingName, exercise, exerciseKey, exercisesConfirmed, 
       } else{
         setStravaCode(".");
       }
-      setShowConfirmModal(false);
+      setShowConfirmExercise(false);
     } else {
       Swal.fire({
         title: 'Error!',
@@ -109,12 +109,12 @@ function ConfirmModal({trainingName, exercise, exerciseKey, exercisesConfirmed, 
 
         <div className="modal-buttons">
           <button className="confirm-button" onClick={() => handleConfirmTraining(exercise, exerciseKey)}>Confirmar</button>
-          <button className="cancel-button" onClick={() => setShowConfirmModal(false)}>Cancelar</button>
+          <button className="cancel-button" onClick={() => setShowConfirmExercise(false)}>Cancelar</button>
         </div>
       </div>
     </div>
   );
 }
 
-export default ConfirmModal;
+export default ConfirmExercise;
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { endOfWeek, startOfWeek, format, add, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import "../styles/WeekCalendar.css";
+import "../styles/components/WeekCalendar.css";
 
 function WeekCalendar({calendarDate, showDayNumber, handleCalendarChange, dayFlags}) {
   const [days, setDays] = useState([]);

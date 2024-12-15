@@ -8,7 +8,7 @@ import WeekCalendar from "../../components/WeekCalendar";
 import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import Calendar from 'react-calendar';
-import "../../styles/Initial.css";
+import "../../styles/pages/Initial.css";
 import axios from "axios";
 
 function Initial() {

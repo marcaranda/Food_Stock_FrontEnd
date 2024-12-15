@@ -10,7 +10,7 @@ import WeekCalendar from "../../components/WeekCalendar";
 import Navbar from "../../components/Navbar";
 import Swal from 'sweetalert2';
 import axios from "axios";
-import "../../styles/AddTraining.css";
+import "../../styles/pages/AddTraining.css";
 
 function AddTraining() {
   const navigate = useNavigate();

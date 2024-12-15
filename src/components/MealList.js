@@ -1,29 +1,16 @@
 import { useState, useEffect } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendar, faList } from "@fortawesome/free-solid-svg-icons";
-import { useParams } from 'react-router-dom';
-import { getUrl } from "../../data/Constants";
+import { getUrl } from '../data/Constants';
 import { format, isBefore, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import WeekCalendar from "../../components/WeekCalendar";
-import Navbar from "../../components/Navbar";
-import MealList from "../../components/MealList";
 import Swal from 'sweetalert2';
-import Calendar from 'react-calendar';
 import axios from "axios";
-import "../../styles/pages/DietDetails.css";
-import 'react-calendar/dist/Calendar.css';
+import "../styles/components/MealList.css";
 
-function DietDetails() {
+function MealList({ dietName, calendarDate, showEditButton }) {
   const url = getUrl();
   const actualDate = new Date();
-  const { dietName } = useParams();
   const [diet, setDiet] = useState([]);
   const [selectedDayMeals, setSelectedDayMeals] = useState([]);
-  const [totalFood, setTotalFood] = useState([]);
-  const [showTotalFood, setShowTotalFood] = useState(false);
-  const [calendarDate, setCalendarDate] = useState(new Date());
-  const [showCalendar, setShowCalendar] = useState(false);
   const [mealsConfirmed, setMealsConfirmed] = useState([]);
 
   useEffect(() => {
@@ -36,7 +23,6 @@ function DietDetails() {
           .then((response) => {
             const dietData = response.data.diet;
             setDiet(dietData.days);
-            setTotalFood(dietData.totalFood);
           });        
       } catch (error) {
         console.error('Error fetching diet:', error);
@@ -53,9 +39,9 @@ function DietDetails() {
       try {
         const dateFormatted = format(calendarDate, 'yyyy-MM-dd');
 
-        await axios.get(`${url}meal/${dateFormatted}`)
+        await axios.get(`${url}confirmedDay/${dateFormatted}/${dietName}/meals`)
           .then((response) => {
-            setMealsConfirmed(response.data.meal.meals);
+            setMealsConfirmed(response.data.confirmedMeals);
           });
       } catch (error) {
         console.error('Error fetching meals:', error);
@@ -89,14 +75,15 @@ function DietDetails() {
           ))
         ));
 
-        const confirmedMeal = {
+        const confirmedMeal = [{
           [mealKey]: meal
-        }
+        }];
 
-        axios.put(`${url}meal`, {
+        axios.put(`${url}/confirmMeal`, {
+          dietName: dietName,
           date: format(calendarDate, 'yyyy-MM-dd'),
           meal: confirmedMeal,
-        });
+        })
 
         const newMealsConfirmed = [...mealsConfirmed];
         newMealsConfirmed.push({meal: confirmedMeal});
@@ -130,20 +117,6 @@ function DietDetails() {
     console.log(meal);
   }
 
-  const handleShowCalendarClick = () => {
-    setShowCalendar(prevShowCalendar => !prevShowCalendar);
-  }
-
-  const handleShowTotalFood = () => {
-    setShowTotalFood(prevShowTotalFood => !prevShowTotalFood);
-  }
-
-  const handleCalendarChange = (date) => {
-    setCalendarDate(date);
-    getDayMeals(date);
-    setShowCalendar(false);
-  }
-
   function getDayMeals(date) {
     const dayKey = format(date, 'EEEE', { locale: es }).toLowerCase();
     setSelectedDayMeals(diet[dayKey]);
@@ -152,69 +125,60 @@ function DietDetails() {
   function isMealConfirmed(mealKey) {
     return mealsConfirmed.some(meal => meal.meal.hasOwnProperty(mealKey));
   }
-
+  
   return (
-    <div className="container">
-      <div className="header">
-        <Navbar />
-      </div>
-
-      <h1>{dietName}</h1>
-
-      <div className="calendar">
-        <div className="calendar-row">
-          <label>Calendario</label>
-          <button
-            onClick={handleShowCalendarClick}  
-          >
-            {showCalendar ? <FontAwesomeIcon icon={faList} /> : <FontAwesomeIcon icon={faCalendar} />}
-          </button>
-        </div>
-        {showCalendar ? (
-          <div className="calendar-row-one-item">
-            <Calendar 
-              value={calendarDate}
-              onChange={handleCalendarChange}
-              locale="es-ES"
-            />
-          </div>
-        ) : (
-          <div className="calendar-row-one-item">
-            <WeekCalendar
-              calendarDate={calendarDate}
-              showDayNumber={true}
-              handleCalendarChange={handleCalendarChange}
-            />
-          </div>
-        )}
-        <div className="calendar-row-one-item">
-          <button onClick={handleShowTotalFood}>{showTotalFood ? 'Ver Comida Diaria' : 'Ver Comida Semanal'}</button>
-        </div>
-      </div>
-
-      {showTotalFood ? (
-        <div>
-          <h2>Total de Alimentos:</h2>
-          <ul>
-            {totalFood.map((food, index) => (
-              <li key={index}>
-                {food.name}: {food.quantity} {food.unit}
+    <div>
+      {selectedDayMeals ? (
+        <ul className="meal-list">
+        {Object.entries(selectedDayMeals).map(([mealKey, meal], index) => (
+          <div>
+            {isMealConfirmed(mealKey) ? (
+              <li className="meal-item confirmed" key={index}>
+                <div className="meal-header">
+                  <h3>Comida {index + 1}:</h3>
+                </div>
+                <h4>Alimentos:</h4>
+                <ul className="ingredient-list">
+                  {mealsConfirmed.map((ingredientObject, i) => (
+                    Object.entries(ingredientObject).map(([ingredientKey, ingredient], j) => (
+                    <li className="ingredient-item" key={`${i}-${j}`}>
+                      <p>{ingredient.name}: {ingredient.quantity} {ingredient.unit}</p>
+                    </li>
+                    ))
+                  ))}
+                </ul>
               </li>
-            ))}
-          </ul>
-        </div>
+            ) : (
+              <li className={`meal-item ${isMealConfirmed(mealKey) ? "confirmed" : ""}`} key={index}>
+                <div className="meal-header">
+                  <h3>Comida {index + 1}:</h3>
+                  <div className="meal-buttons">
+                    <button onClick={() => handleConfirmMeal(meal, mealKey)}>Confirmar</button>
+                    {showEditButton &&
+                      <button onClick={() => handleConfirmMeal(meal)}>Editar</button>
+                    }
+                  </div>
+                </div>
+                <h4>Alimentos:</h4>
+                <ul className="ingredient-list">
+                  {meal.map((ingredientObject, i) => (
+                    Object.entries(ingredientObject).map(([ingredientKey, ingredient], j) => (
+                    <li className="ingredient-item" key={`${i}-${j}`}>
+                      {ingredient.name}: {ingredient.quantity} {ingredient.unit}
+                    </li>
+                    ))
+                  ))}
+                </ul>
+              </li>
+            )}
+          </div>
+        ))}
+      </ul>
       ) : (
-        <>
-          <h2>Comidas del {format(calendarDate, 'EEEE', {locale : es}).charAt(0).toUpperCase() + format(calendarDate, 'EEEE', {locale : es}).slice(1)}:</h2>
-          <MealList
-          dietName={dietName}
-          calendarDate={calendarDate}
-          showEditButton={true}
-          />
-        </>
+        <p>No hay comidas para este día.</p>
       )}
     </div>
   );
-};
+}
 
-export default DietDetails
+export default MealList;
