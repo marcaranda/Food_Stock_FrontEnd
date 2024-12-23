@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getUrl } from '../data/Constants';
 import { format, isBefore, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ConfirmMeal from "./ConfirmMeal";
 import Swal from 'sweetalert2';
 import axios from "axios";
 import "../styles/components/MealList.css";
@@ -12,6 +13,8 @@ function MealList({ dietName, calendarDate, showEditButton }) {
   const [diet, setDiet] = useState([]);
   const [selectedDayMeals, setSelectedDayMeals] = useState([]);
   const [mealsConfirmed, setMealsConfirmed] = useState([]);
+  const [showConfirmMeal, setShowConfirmMeal] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState(null);
 
   useEffect(() => {
     const fetchDiet = async () => {
@@ -112,6 +115,20 @@ function MealList({ dietName, calendarDate, showEditButton }) {
     }
   }
 
+  const handleShowConfirmMeal = (meal, mealKey) => {
+    if (isSameDay(calendarDate, actualDate) || isBefore(calendarDate, actualDate)) {
+      setSelectedMeal({meal : meal, mealKey : mealKey});
+      setShowConfirmMeal(true);
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: 'No puedes confirmar una comida del futuro',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
+    }
+  }
+
   // eslint-disable-next-line
   const handleEditMeal = (meal) => {
     console.log(meal);
@@ -153,7 +170,7 @@ function MealList({ dietName, calendarDate, showEditButton }) {
                 <div className="meal-header">
                   <h3>Comida {index + 1}:</h3>
                   <div className="meal-buttons">
-                    <button onClick={() => handleConfirmMeal(meal, mealKey)}>Confirmar</button>
+                    <button onClick={() => handleShowConfirmMeal(meal, mealKey)}>Confirmar</button>
                     {showEditButton &&
                       <button onClick={() => handleConfirmMeal(meal)}>Editar</button>
                     }
@@ -171,6 +188,14 @@ function MealList({ dietName, calendarDate, showEditButton }) {
                 </ul>
               </li>
             )}
+            {showConfirmMeal &&
+              <ConfirmMeal
+                dietName={dietName}
+                meal={selectedMeal.meal}
+                mealKey={selectedMeal.mealKey}
+                setShowConfirmMeal={setShowConfirmMeal}
+              />
+            }
           </div>
         ))}
       </ul>
